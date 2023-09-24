@@ -1,0 +1,1 @@
+A very simple app that allows you to use your display as a flashlight. The brightness can be adjusted and the app can be started from a quick settings tile.
