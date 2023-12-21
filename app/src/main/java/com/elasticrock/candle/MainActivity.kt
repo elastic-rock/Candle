@@ -9,15 +9,21 @@ import android.view.Window
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
+import androidx.compose.foundation.layout.safeGesturesPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Brightness6
+import androidx.compose.material.icons.filled.Exposure
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -67,16 +73,11 @@ class MainActivity : ComponentActivity() {
 
         runBlocking { setBrightness(window, DataStore(dataStore).readPreviousBrightness()) }
 
+        enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
             CandleTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    TorchApp(window, dataStore)
-                }
+                TorchApp(window, dataStore)
             }
         }
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -97,39 +98,45 @@ class MainActivity : ComponentActivity() {
 fun TorchApp(window: Window, dataStore: DataStore<Preferences>) {
     val scaffoldState = rememberBottomSheetScaffoldState()
     var selectedHue by remember { mutableFloatStateOf(0f) }
+    var selectedLightness by remember { mutableFloatStateOf(1f) }
     val scope = rememberCoroutineScope()
 
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
-        containerColor = Color.hsl(hue = selectedHue, saturation = 1f, lightness = 0.5f),
+        sheetPeekHeight = 256.dp,
+        sheetSwipeEnabled = false,
         sheetContent = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .safeContentPadding(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                PreferenceSlider(
-                    icon = Icons.Filled.Palette,
-                    range = 0f..360f,
-                    value = selectedHue,
-                    onValueChange = { selectedHue = it }
-                )
-                var brightness by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreviousBrightness() }) }
-                PreferenceSlider(
-                    range = minBrightness..maxBrightness,
-                    icon = Icons.Filled.Brightness6,
-                    value = brightness,
-                    onValueChange = {
-                        brightness = it
-                        setBrightness(window, it)
-                        runBlocking { DataStore(dataStore).savePreviousBrightness(it) }
-                    }
-                )
-            }
+            PreferenceSlider(
+                icon = Icons.Filled.Palette,
+                range = 0f..360f,
+                value = selectedHue,
+                onValueChange = { selectedHue = it }
+            )
+            PreferenceSlider(
+                icon = Icons.Filled.Exposure,
+                range = 0f..1f,
+                value = selectedLightness,
+                onValueChange = { selectedLightness = it }
+            )
+            var brightness by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreviousBrightness() }) }
+            PreferenceSlider(
+                range = minBrightness..maxBrightness,
+                icon = Icons.Filled.Brightness6,
+                value = brightness,
+                onValueChange = {
+                    brightness = it
+                    setBrightness(window, it)
+                    runBlocking { DataStore(dataStore).savePreviousBrightness(it) }
+                }
+            )
         },
         content = {
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = Color.hsl(hue = selectedHue, saturation = 1f, lightness = selectedLightness)
+            ) {
 
+            }
         }
     )
 }
@@ -143,7 +150,8 @@ fun PreferenceSlider(
 ) {
     Row(
         modifier = Modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
