@@ -1,5 +1,6 @@
 package com.elasticrock.candle
 
+import android.app.Activity
 import android.app.StatusBarManager
 import android.content.ComponentName
 import android.content.Context
@@ -10,17 +11,12 @@ import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.foundation.layout.safeGesturesPadding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Brightness6
 import androidx.compose.material.icons.filled.Exposure
@@ -28,11 +24,11 @@ import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
@@ -42,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.datastore.core.DataStore
@@ -77,7 +74,7 @@ class MainActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
             CandleTheme {
-                TorchApp(window, dataStore)
+                TorchApp(dataStore)
             }
         }
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -95,18 +92,26 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TorchApp(window: Window, dataStore: DataStore<Preferences>) {
+fun TorchApp(dataStore: DataStore<Preferences>) {
     val scaffoldState = rememberBottomSheetScaffoldState()
     var brightness by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreviousBrightness() }) }
     var selectedHue by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreviousHue() }) }
     var selectedLightness by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreviousLightness() }) }
     val scope = rememberCoroutineScope()
+    val view = LocalView.current
+    val window = (view.context as Activity).window
+
+    if (!view.isInEditMode) {
+        WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = selectedLightness > 0.5f
+    }
 
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
-        sheetPeekHeight = 256.dp,
-        sheetSwipeEnabled = false,
+        sheetSwipeEnabled = true,
         sheetContent = {
+            Row() {
+
+            }
             PreferenceSlider(
                 icon = Icons.Filled.Palette,
                 range = 0f..360f,
@@ -135,6 +140,7 @@ fun TorchApp(window: Window, dataStore: DataStore<Preferences>) {
                     runBlocking { DataStore(dataStore).savePreviousBrightness(it) }
                 }
             )
+            Spacer(modifier = Modifier.padding(vertical = 16.dp))
         },
         content = {
             Surface(
