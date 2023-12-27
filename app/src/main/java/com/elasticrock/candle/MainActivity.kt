@@ -26,8 +26,11 @@ import androidx.compose.material.icons.filled.Exposure
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -155,9 +158,11 @@ fun TorchApp(dataStore: DataStore<Preferences>) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.safeContentPadding()
                 ) {
-                    Button(
+                    val buttonColor = if (selectedLightness > 0.5f) {Color.Black} else {Color.White}
+                    OutlinedButton(
                         onClick = { scope.launch { scaffoldState.bottomSheetState.expand() }},
-                        modifier = Modifier.padding(16.dp)
+                        modifier = Modifier.padding(16.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = buttonColor)
                     ) {
                         Text(text = "Colours")
                     }
