@@ -28,7 +28,6 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
@@ -109,9 +108,6 @@ fun TorchApp(dataStore: DataStore<Preferences>) {
         scaffoldState = scaffoldState,
         sheetSwipeEnabled = true,
         sheetContent = {
-            Row() {
-
-            }
             PreferenceSlider(
                 icon = Icons.Filled.Palette,
                 range = 0f..360f,
