@@ -11,21 +11,26 @@ import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Brightness6
 import androidx.compose.material.icons.filled.Exposure
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -44,6 +49,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.elasticrock.candle.ui.theme.CandleTheme
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 const val tag = "MainActivity"
@@ -107,6 +113,7 @@ fun TorchApp(dataStore: DataStore<Preferences>) {
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
         sheetSwipeEnabled = true,
+        sheetPeekHeight = 0.dp,
         sheetContent = {
             PreferenceSlider(
                 icon = Icons.Filled.Palette,
@@ -143,7 +150,18 @@ fun TorchApp(dataStore: DataStore<Preferences>) {
                 modifier = Modifier.fillMaxSize(),
                 color = Color.hsl(hue = selectedHue, saturation = 1f, lightness = selectedLightness)
             ) {
-
+                Column(
+                    verticalArrangement = Arrangement.Bottom,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.safeContentPadding()
+                ) {
+                    Button(
+                        onClick = { scope.launch { scaffoldState.bottomSheetState.expand() }},
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Text(text = "Colours")
+                    }
+                }
             }
         }
     )
