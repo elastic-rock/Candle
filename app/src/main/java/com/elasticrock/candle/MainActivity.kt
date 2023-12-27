@@ -97,8 +97,9 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun TorchApp(window: Window, dataStore: DataStore<Preferences>) {
     val scaffoldState = rememberBottomSheetScaffoldState()
-    var selectedHue by remember { mutableFloatStateOf(0f) }
-    var selectedLightness by remember { mutableFloatStateOf(1f) }
+    var brightness by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreviousBrightness() }) }
+    var selectedHue by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreviousHue() }) }
+    var selectedLightness by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreviousLightness() }) }
     val scope = rememberCoroutineScope()
 
     BottomSheetScaffold(
@@ -110,15 +111,20 @@ fun TorchApp(window: Window, dataStore: DataStore<Preferences>) {
                 icon = Icons.Filled.Palette,
                 range = 0f..360f,
                 value = selectedHue,
-                onValueChange = { selectedHue = it }
+                onValueChange = {
+                    selectedHue = it
+                    runBlocking { DataStore(dataStore).savePreviousHue(it) }
+                }
             )
             PreferenceSlider(
                 icon = Icons.Filled.Exposure,
                 range = 0f..1f,
                 value = selectedLightness,
-                onValueChange = { selectedLightness = it }
+                onValueChange = {
+                    selectedLightness = it
+                    runBlocking { DataStore(dataStore).savePreviousLightness(it) }
+                }
             )
-            var brightness by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreviousBrightness() }) }
             PreferenceSlider(
                 range = minBrightness..maxBrightness,
                 icon = Icons.Filled.Brightness6,
