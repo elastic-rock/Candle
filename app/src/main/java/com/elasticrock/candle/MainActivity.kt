@@ -48,6 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.datastore.core.DataStore
@@ -236,7 +237,7 @@ fun TorchApp(dataStore: DataStore<Preferences>) {
                         contentPadding = PaddingValues(start = 16.dp, end = 24.dp)
                     ) {
                         Icon(imageVector = Icons.Filled.Tune, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
-                        Text(text = "Colours")
+                        Text(text = stringResource(id = R.string.colors))
                     }
                 }
             }
