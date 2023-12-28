@@ -13,6 +13,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,12 +25,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Brightness6
 import androidx.compose.material.icons.filled.Exposure
 import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
@@ -38,6 +39,7 @@ import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -118,6 +120,74 @@ fun TorchApp(dataStore: DataStore<Preferences>) {
         sheetSwipeEnabled = true,
         sheetPeekHeight = 0.dp,
         sheetContent = {
+            Row(
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp)
+            ) {
+                fun isEven(value: Int) = value % 2 == 0
+
+                var counter0 by remember { mutableIntStateOf(0) }
+                var hue0 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(0).first }) }
+                var lightness0 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(0).second }) }
+                val brightness0 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(0).third }) }
+                SavedColor(
+                    {
+                        if (isEven(counter0)) {
+                            selectedHue = hue0
+                            selectedLightness = lightness0
+                            brightness = brightness0
+                        } else {
+                            scope.launch { DataStore(dataStore).savePreset(selectedHue, selectedLightness, brightness, 0) }
+                            hue0 = selectedHue
+                            lightness0 = selectedLightness
+                        }
+                        counter0++
+                    },
+                    Color.hsl(hue = hue0, saturation = 1f, lightness = lightness0)
+                    )
+
+                var counter1 by remember { mutableIntStateOf(0) }
+                var hue1 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(1).first }) }
+                var lightness1 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(1).second }) }
+                val brightness1 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(1).third }) }
+                SavedColor(
+                    {
+                        if (isEven(counter1)) {
+                            selectedHue = hue1
+                            selectedLightness = lightness1
+                            brightness = brightness1
+                        } else {
+                            scope.launch { DataStore(dataStore).savePreset(selectedHue, selectedLightness, brightness, 1) }
+                            hue1 = selectedHue
+                            lightness1 = selectedLightness
+                        }
+                        counter1++
+                    },
+                    Color.hsl(hue = hue1, saturation = 1f, lightness = lightness1)
+                    )
+
+                var counter2 by remember { mutableIntStateOf(0) }
+                var hue2 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(2).first }) }
+                var lightness2 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(2).second }) }
+                val brightness2 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(2).third }) }
+                SavedColor(
+                    {
+                        if (isEven(counter2)) {
+                            selectedHue = hue2
+                            selectedLightness = lightness2
+                            brightness = brightness2
+                        } else {
+                            scope.launch { DataStore(dataStore).savePreset(selectedHue, selectedLightness, brightness, 2) }
+                        }
+                        counter2++
+                        hue2 = selectedHue
+                        lightness2 = selectedLightness
+                    },
+                    Color.hsl(hue = hue2, saturation = 1f, lightness = lightness2)
+                    )
+            }
             PreferenceSlider(
                 icon = Icons.Filled.Palette,
                 range = 0f..360f,
@@ -162,14 +232,29 @@ fun TorchApp(dataStore: DataStore<Preferences>) {
                     OutlinedButton(
                         onClick = { scope.launch { scaffoldState.bottomSheetState.expand() }},
                         modifier = Modifier.padding(16.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = buttonColor)
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = buttonColor),
+                        contentPadding = PaddingValues(start = 16.dp, end = 24.dp)
                     ) {
+                        Icon(imageVector = Icons.Filled.Tune, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
                         Text(text = "Colours")
                     }
                 }
             }
         }
     )
+}
+
+@Composable
+fun SavedColor(
+    onClick: () -> Unit,
+    containerColor: Color
+) {
+    Button(
+        onClick = onClick,
+        colors = ButtonDefaults.buttonColors(containerColor = containerColor)
+    ) {
+
+    }
 }
 
 @Composable

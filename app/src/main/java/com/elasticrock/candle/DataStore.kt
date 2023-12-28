@@ -46,6 +46,45 @@ class DataStore(private val dataStore: DataStore<Preferences>) {
         }
     }
 
+    suspend fun savePreset(hue: Float, lightness: Float, brightness: Float, preference: Int) {
+        try {
+            dataStore.edit { preferences -> preferences[floatPreferencesKey("hue$preference")] = hue }
+            dataStore.edit { preferences -> preferences[floatPreferencesKey("lightness$preference")] = lightness }
+            dataStore.edit { preferences -> preferences[floatPreferencesKey("brightness$preference")] = brightness }
+        } catch (e: IOException) {
+            Log.e(tag,"Error writing preset$preference")
+        }
+    }
+
+    suspend fun readPreset(preference: Int): Triple<Float, Float, Float> {
+        if (preference > 2) {
+            throw Exception("preference not in range")
+        }
+        val hue: Flow<Float> = dataStore.data
+            .map { preferences ->
+                preferences[floatPreferencesKey("hue$preference")] ?: when (preference) {
+                    0 -> 1f
+                    1 -> 0.5f
+                    2 -> 0.5f
+                    else -> 1f
+                }
+            }
+        val lightness: Flow<Float> = dataStore.data
+            .map { preferences ->
+                preferences[floatPreferencesKey("lightness$preference")] ?: when (preference) {
+                    0 -> 1f
+                    1 -> 0f
+                    2 -> 0.75f
+                    else -> 1f
+                }
+            }
+        val brightness: Flow<Float> = dataStore.data
+            .map { preferences ->
+                preferences[floatPreferencesKey("brightness$preference")] ?: maxBrightness
+            }
+        return Triple(hue.first(), lightness.first(), brightness.first())
+    }
+
     suspend fun readPreviousBrightness() : Float {
         val previousBrightness: Flow<Float> = dataStore.data
             .map { preferences ->
