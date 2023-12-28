@@ -139,6 +139,7 @@ fun TorchApp(dataStore: DataStore<Preferences>) {
                             selectedHue = hue0
                             selectedLightness = lightness0
                             brightness = brightness0
+                            setBrightness(window, brightness0)
                         } else {
                             scope.launch { DataStore(dataStore).savePreset(selectedHue, selectedLightness, brightness, 0) }
                             hue0 = selectedHue
@@ -159,6 +160,7 @@ fun TorchApp(dataStore: DataStore<Preferences>) {
                             selectedHue = hue1
                             selectedLightness = lightness1
                             brightness = brightness1
+                            setBrightness(window, brightness1)
                         } else {
                             scope.launch { DataStore(dataStore).savePreset(selectedHue, selectedLightness, brightness, 1) }
                             hue1 = selectedHue
@@ -179,6 +181,7 @@ fun TorchApp(dataStore: DataStore<Preferences>) {
                             selectedHue = hue2
                             selectedLightness = lightness2
                             brightness = brightness2
+                            setBrightness(window, brightness2)
                         } else {
                             scope.launch { DataStore(dataStore).savePreset(selectedHue, selectedLightness, brightness, 2) }
                         }
