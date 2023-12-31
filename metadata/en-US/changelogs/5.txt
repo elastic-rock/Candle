@@ -1,0 +1,1 @@
+ - Change behaviour of color presets to clicking for selecting preset and long clicking for saving preset
