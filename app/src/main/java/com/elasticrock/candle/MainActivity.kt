@@ -11,6 +11,10 @@ import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Indication
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -27,10 +31,10 @@ import androidx.compose.material.icons.filled.Exposure
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.BottomSheetScaffold
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
@@ -39,7 +43,6 @@ import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -127,67 +130,68 @@ fun TorchApp(dataStore: DataStore<Preferences>) {
                     .fillMaxWidth()
                     .padding(vertical = 4.dp)
             ) {
-                fun isEven(value: Int) = value % 2 == 0
-
-                var counter0 by remember { mutableIntStateOf(0) }
                 var hue0 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(0).first }) }
                 var lightness0 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(0).second }) }
-                val brightness0 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(0).third }) }
+                var brightness0 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(0).third }) }
                 SavedColor(
                     {
-                        if (isEven(counter0)) {
-                            selectedHue = hue0
-                            selectedLightness = lightness0
-                            brightness = brightness0
-                            setBrightness(window, brightness0)
-                        } else {
-                            scope.launch { DataStore(dataStore).savePreset(selectedHue, selectedLightness, brightness, 0) }
-                            hue0 = selectedHue
-                            lightness0 = selectedLightness
-                        }
-                        counter0++
+                        selectedHue = hue0
+                        selectedLightness = lightness0
+                        brightness = brightness0
+                        setBrightness(window, brightness0)
+                        scope.launch { DataStore(dataStore).savePreviousHue(hue0) }
+                        scope.launch { DataStore(dataStore).savePreviousLightness(lightness0) }
+                        scope.launch { DataStore(dataStore).savePreviousBrightness(brightness0) }
+                    },
+                    {
+                        scope.launch { DataStore(dataStore).savePreset(selectedHue, selectedLightness, brightness, 0) }
+                        hue0 = selectedHue
+                        lightness0 = selectedLightness
+                        brightness0 = brightness
                     },
                     Color.hsl(hue = hue0, saturation = 1f, lightness = lightness0)
                     )
 
-                var counter1 by remember { mutableIntStateOf(0) }
                 var hue1 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(1).first }) }
                 var lightness1 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(1).second }) }
-                val brightness1 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(1).third }) }
+                var brightness1 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(1).third }) }
                 SavedColor(
                     {
-                        if (isEven(counter1)) {
-                            selectedHue = hue1
-                            selectedLightness = lightness1
-                            brightness = brightness1
-                            setBrightness(window, brightness1)
-                        } else {
-                            scope.launch { DataStore(dataStore).savePreset(selectedHue, selectedLightness, brightness, 1) }
-                            hue1 = selectedHue
-                            lightness1 = selectedLightness
-                        }
-                        counter1++
+                        selectedHue = hue1
+                        selectedLightness = lightness1
+                        brightness = brightness1
+                        setBrightness(window, brightness1)
+                        scope.launch { DataStore(dataStore).savePreviousHue(hue1) }
+                        scope.launch { DataStore(dataStore).savePreviousLightness(lightness1) }
+                        scope.launch { DataStore(dataStore).savePreviousBrightness(brightness1) }
+                    },
+                    {
+                        scope.launch { DataStore(dataStore).savePreset(selectedHue, selectedLightness, brightness, 1) }
+                        hue1 = selectedHue
+                        lightness1 = selectedLightness
+                        brightness1 = brightness
                     },
                     Color.hsl(hue = hue1, saturation = 1f, lightness = lightness1)
                     )
 
-                var counter2 by remember { mutableIntStateOf(0) }
                 var hue2 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(2).first }) }
                 var lightness2 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(2).second }) }
-                val brightness2 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(2).third }) }
+                var brightness2 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(2).third }) }
                 SavedColor(
                     {
-                        if (isEven(counter2)) {
-                            selectedHue = hue2
-                            selectedLightness = lightness2
-                            brightness = brightness2
-                            setBrightness(window, brightness2)
-                        } else {
-                            scope.launch { DataStore(dataStore).savePreset(selectedHue, selectedLightness, brightness, 2) }
-                        }
-                        counter2++
+                        selectedHue = hue2
+                        selectedLightness = lightness2
+                        brightness = brightness2
+                        setBrightness(window, brightness2)
+                        scope.launch { DataStore(dataStore).savePreviousHue(hue2) }
+                        scope.launch { DataStore(dataStore).savePreviousLightness(lightness2) }
+                        scope.launch { DataStore(dataStore).savePreviousBrightness(brightness2) }
+                    },
+                    {
+                        scope.launch { DataStore(dataStore).savePreset(selectedHue, selectedLightness, brightness, 2) }
                         hue2 = selectedHue
                         lightness2 = selectedLightness
+                        brightness2 = brightness
                     },
                     Color.hsl(hue = hue2, saturation = 1f, lightness = lightness2)
                     )
@@ -198,7 +202,7 @@ fun TorchApp(dataStore: DataStore<Preferences>) {
                 value = selectedHue,
                 onValueChange = {
                     selectedHue = it
-                    runBlocking { DataStore(dataStore).savePreviousHue(it) }
+                    scope.launch { DataStore(dataStore).savePreviousHue(it) }
                 }
             )
             PreferenceSlider(
@@ -207,7 +211,7 @@ fun TorchApp(dataStore: DataStore<Preferences>) {
                 value = selectedLightness,
                 onValueChange = {
                     selectedLightness = it
-                    runBlocking { DataStore(dataStore).savePreviousLightness(it) }
+                    scope.launch { DataStore(dataStore).savePreviousLightness(it) }
                 }
             )
             PreferenceSlider(
@@ -217,7 +221,7 @@ fun TorchApp(dataStore: DataStore<Preferences>) {
                 onValueChange = {
                     brightness = it
                     setBrightness(window, it)
-                    runBlocking { DataStore(dataStore).savePreviousBrightness(it) }
+                    scope.launch { DataStore(dataStore).savePreviousBrightness(it) }
                 }
             )
             Spacer(modifier = Modifier.padding(vertical = 16.dp))
@@ -248,14 +252,18 @@ fun TorchApp(dataStore: DataStore<Preferences>) {
     )
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SavedColor(
     onClick: () -> Unit,
+    onLongClick: () -> Unit,
     containerColor: Color
 ) {
-    Button(
-        onClick = onClick,
-        colors = ButtonDefaults.buttonColors(containerColor = containerColor)
+    Surface(
+        shape = MaterialTheme.shapes.extraLarge,
+        color = containerColor,
+        modifier = Modifier.combinedClickable(onClick = onClick, onLongClick = onLongClick)
+            .size(width = 48.dp, height = 40.dp)
     ) {
 
     }
