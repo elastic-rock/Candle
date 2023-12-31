@@ -29,7 +29,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Brightness6
 import androidx.compose.material.icons.filled.Cake
-import androidx.compose.material.icons.filled.CandlestickChart
 import androidx.compose.material.icons.filled.Exposure
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Tune
