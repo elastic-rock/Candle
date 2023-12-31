@@ -39,7 +39,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.SheetState
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -115,7 +114,7 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TorchApp(dataStore: DataStore<Preferences>) {
-    val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = SheetState(skipHiddenState = false, skipPartiallyExpanded = true))
+    val scaffoldState = rememberBottomSheetScaffoldState()
     var brightness by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreviousBrightness() }) }
     var selectedHue by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreviousHue() }) }
     var selectedLightness by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreviousLightness() }) }
@@ -241,7 +240,6 @@ fun TorchApp(dataStore: DataStore<Preferences>) {
                 )
                 Button(onClick = {
                     startCandleEffect()
-                    scope.launch { scaffoldState.bottomSheetState.hide() }
                 }) {
                     Image(imageVector = Icons.Filled.Cake, contentDescription = null)
                 }
