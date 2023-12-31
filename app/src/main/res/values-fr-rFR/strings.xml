@@ -2,4 +2,5 @@
 <resources>
     <string name="candle">Bougie</string>
     <string name="colors">Couleurs</string>
+    <string name="stop">Arrêter</string>
 </resources>

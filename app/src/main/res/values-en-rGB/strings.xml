@@ -2,4 +2,5 @@
 <resources>
     <string name="candle">Candle</string>
     <string name="colors">Colours</string>
+    <string name="stop">Stop</string>
 </resources>
