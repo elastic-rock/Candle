@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.StatusBarManager
 import android.content.ComponentName
 import android.content.Context
+import android.content.pm.ActivityInfo
 import android.os.Build
 import android.os.Bundle
 import android.view.Window
@@ -109,6 +110,8 @@ class MainActivity : ComponentActivity() {
                 android.graphics.drawable.Icon.createWithResource(applicationContext,R.drawable.rounded_candle_qs),
                 {}) {}
         }
+
+        this.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
     }
 }
 
