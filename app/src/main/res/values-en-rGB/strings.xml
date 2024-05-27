@@ -3,4 +3,7 @@
     <string name="candle">Candle</string>
     <string name="colors">Colours</string>
     <string name="stop">Stop</string>
+    <string name="settings">Settings</string>
+    <string name="keep_screen_on">Keep screen on</string>
+    <string name="keep_screen_on_description">Prevent the screen from turning off</string>
 </resources>

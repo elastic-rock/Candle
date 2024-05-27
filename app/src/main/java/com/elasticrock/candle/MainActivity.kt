@@ -12,6 +12,8 @@ import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -27,22 +29,32 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Brightness6
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.Exposure
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
@@ -59,18 +71,24 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.elasticrock.candle.ui.theme.CandleTheme
+import com.elasticrock.candle.ui.theme.applyOpacity
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
-const val tag = "MainActivity"
 const val maxBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_FULL
 const val minBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_OFF
 
@@ -100,7 +118,6 @@ class MainActivity : ComponentActivity() {
                 TorchApp(dataStore)
             }
         }
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val statusBarService = applicationContext.getSystemService(StatusBarManager::class.java)
@@ -115,9 +132,192 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+private const val horizontal = 8
+private const val vertical = 16
+
 @Composable
 fun TorchApp(dataStore: DataStore<Preferences>) {
+    val view = LocalView.current
+    val window = (view.context as Activity).window
+    var keepScreenOn by remember { mutableStateOf(runBlocking { DataStore(dataStore).readKeepScreenOn() }) }
+    val scope = rememberCoroutineScope()
+    val onKeepScreenOnPreferenceChange = {
+        if (!keepScreenOn) {
+            keepScreenOn = true
+            scope.launch { DataStore(dataStore).saveKeepScreenOn(true) }
+
+        } else {
+            keepScreenOn = false
+            scope.launch { DataStore(dataStore).saveKeepScreenOn(false) }
+        }
+    }
+
+    if (keepScreenOn) {
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    } else {
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    }
+
+    val navController = rememberNavController()
+    NavHost(
+        navController = navController,
+        startDestination = "main",
+        enterTransition = { EnterTransition.None },
+        exitTransition = { ExitTransition.None },
+        popEnterTransition = { EnterTransition.None },
+        popExitTransition = { ExitTransition.None },
+    ) {
+        composable("main") { Torch(dataStore, navController) }
+        composable("settings") {
+            Settings(
+                navController = navController,
+                onKeepScreenOnPreferenceChange = { onKeepScreenOnPreferenceChange() },
+                keepScreenOn = keepScreenOn
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun Settings(navController: NavHostController, onKeepScreenOnPreferenceChange: (() -> Unit) = {}, keepScreenOn: Boolean) {
+    Scaffold(Modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = { Text(text = stringResource(id = R.string.settings)) },
+                navigationIcon = { IconButton(onClick = {
+                    navController.navigate("main")
+                }) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, "Go back")
+                }
+                }
+            )
+        },
+        content = { padding ->
+            LazyColumn(Modifier.padding(padding)) {
+                item {
+                    PreferenceSwitch(
+                        title = stringResource(id = R.string.keep_screen_on),
+                        description = stringResource(id = R.string.keep_screen_on_description),
+                        icon = Icons.Filled.Lock,
+                        isChecked = keepScreenOn,
+                        onClick = { onKeepScreenOnPreferenceChange() }
+                    )
+                }
+            }
+        }
+    )
+}
+
+@Composable
+fun PreferenceSwitch(
+    title: String,
+    description: String? = null,
+    icon: ImageVector? = null,
+    enabled: Boolean = true,
+    isChecked: Boolean = true,
+    checkedIcon: ImageVector = Icons.Outlined.Check,
+    onClick: (() -> Unit) = {},
+) {
+    val thumbContent: (@Composable () -> Unit)? = if (isChecked) {
+        {
+            Icon(
+                imageVector = checkedIcon,
+                contentDescription = null,
+                modifier = Modifier.size(SwitchDefaults.IconSize),
+            )
+        }
+    } else {
+        null
+    }
+    Surface(
+        modifier = Modifier.toggleable(value = isChecked,
+            enabled = enabled,
+            onValueChange = { onClick() })
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal.dp, vertical.dp)
+                .padding(start = if (icon == null) 12.dp else 0.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            icon?.let {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .padding(start = 8.dp, end = 16.dp)
+                        .size(24.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.applyOpacity(enabled)
+                )
+            }
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                PreferenceItemTitle(
+                    text = title,
+                    enabled = enabled
+                )
+                if (!description.isNullOrEmpty()) PreferenceItemDescription(
+                    text = description,
+                    enabled = enabled
+                )
+            }
+            Switch(
+                checked = isChecked,
+                onCheckedChange = null,
+                modifier = Modifier.padding(start = 20.dp, end = 6.dp),
+                enabled = enabled,
+                thumbContent = thumbContent
+            )
+        }
+    }
+}
+
+@Composable
+fun PreferenceItemTitle(
+    modifier: Modifier = Modifier,
+    text: String,
+    maxLines: Int = 2,
+    style: TextStyle = MaterialTheme.typography.bodyLarge,
+    enabled: Boolean = true,
+    color: Color = MaterialTheme.colorScheme.onBackground.applyOpacity(enabled),
+    overflow: TextOverflow = TextOverflow.Ellipsis
+) {
+    Text(
+        modifier = modifier,
+        text = text,
+        maxLines = maxLines,
+        style = style,
+        color = color,
+        overflow = overflow
+    )
+}
+
+@Composable
+fun PreferenceItemDescription(
+    modifier: Modifier = Modifier,
+    text: String,
+    maxLines: Int = Int.MAX_VALUE,
+    style: TextStyle = MaterialTheme.typography.bodyMedium,
+    overflow: TextOverflow = TextOverflow.Ellipsis,
+    enabled: Boolean = true,
+    color: Color = MaterialTheme.colorScheme.onSurfaceVariant.applyOpacity(enabled)
+) {
+    Text(
+        modifier = modifier.padding(top = 2.dp),
+        text = text,
+        maxLines = maxLines,
+        style = style,
+        color = color,
+        overflow = overflow
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun Torch(dataStore: DataStore<Preferences>, navController: NavHostController) {
     val scaffoldState = rememberBottomSheetScaffoldState(rememberStandardBottomSheetState(skipHiddenState = false))
     var brightness by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreviousBrightness() }) }
     var selectedHue by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreviousHue() }) }
@@ -277,6 +477,16 @@ fun TorchApp(dataStore: DataStore<Preferences>) {
                     scope.launch { DataStore(dataStore).savePreviousBrightness(it) }
                 }
             )
+
+            OutlinedButton(
+                onClick = { navController.navigate("settings") },
+                modifier = Modifier
+                    .padding(4.dp)
+                    .align(Alignment.CenterHorizontally),
+                contentPadding = PaddingValues(start = 24.dp, end = 24.dp)
+            ) {
+                Text(text = stringResource(id = R.string.settings))
+            }
             Spacer(modifier = Modifier.padding(vertical = 16.dp))
         },
         content = {

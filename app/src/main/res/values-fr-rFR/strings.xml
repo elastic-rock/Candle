@@ -3,4 +3,7 @@
     <string name="candle">Bougie</string>
     <string name="colors">Couleurs</string>
     <string name="stop">Arrêter</string>
+    <string name="settings">Paramètres</string>
+    <string name="keep_screen_on">Maintenir l\'écran allumé</string>
+    <string name="keep_screen_on_description">Empêcher l\'écran de s\'éteindre</string>
 </resources>

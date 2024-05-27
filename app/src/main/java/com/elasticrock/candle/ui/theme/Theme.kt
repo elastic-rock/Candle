@@ -22,6 +22,10 @@ private val DarkColorScheme = darkColorScheme(
     primary = Color.White
 )
 
+fun Color.applyOpacity(enabled: Boolean): Color {
+    return if (enabled) this else this.copy(alpha = 0.62f)
+}
+
 @Composable
 fun CandleTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),

@@ -3,6 +3,7 @@ package com.elasticrock.candle
 import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import kotlinx.coroutines.flow.Flow
@@ -12,9 +13,23 @@ import java.io.IOException
 
 class DataStore(private val dataStore: DataStore<Preferences>) {
 
+    private val tag = "DataStore"
+
     private val previousBrightnessKey = floatPreferencesKey("previousBrightness")
     private val previousHueKey = floatPreferencesKey("previousHue")
     private val previousLightnessKey = floatPreferencesKey("previousLightness")
+    private val keepScreenOnKey = booleanPreferencesKey("keepscreenon")
+
+
+    suspend fun saveKeepScreenOn(keepScreenOn: Boolean) {
+        try {
+            dataStore.edit { preferences ->
+                preferences[keepScreenOnKey] = keepScreenOn
+            }
+        } catch (e: IOException) {
+            Log.e(tag,"Error writing keep screen on setting")
+        }
+    }
 
     suspend fun savePreviousBrightness(previousBrightness: Float) {
         try {
@@ -107,5 +122,13 @@ class DataStore(private val dataStore: DataStore<Preferences>) {
                 preferences[previousLightnessKey] ?: 1f
             }
         return previousLightness.first()
+    }
+
+    suspend fun readKeepScreenOn() : Boolean {
+        val keepScreenOn: Flow<Boolean> = dataStore.data
+            .map { preferences ->
+                preferences[keepScreenOnKey] ?: true
+            }
+        return keepScreenOn.first()
     }
 }

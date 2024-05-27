@@ -3,4 +3,7 @@
     <string name="candle">Svíčka</string>
     <string name="colors">Barvy</string>
     <string name="stop">Zastavit</string>
+    <string name="settings">Nastavení</string>
+    <string name="keep_screen_on">Nevypínat obrazovku</string>
+    <string name="keep_screen_on_description">Zabránění vypnutí obrazovky</string>
 </resources>

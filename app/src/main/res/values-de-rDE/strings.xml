@@ -3,4 +3,7 @@
     <string name="candle">Kerze</string>
     <string name="colors">Farben</string>
     <string name="stop">Stoppen</string>
+    <string name="settings">Einstellungen</string>
+    <string name="keep_screen_on">Bildschirm anlassen</string>
+    <string name="keep_screen_on_description">Verhindern, dass sich der Bildschirm ausschaltet</string>
 </resources>
