@@ -24,11 +24,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
@@ -50,6 +53,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -372,122 +376,135 @@ fun Torch(dataStore: DataStore<Preferences>, navController: NavHostController) {
         sheetSwipeEnabled = true,
         sheetPeekHeight = 0.dp,
         sheetContent = {
-            Row(
-                horizontalArrangement = Arrangement.SpaceEvenly,
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 4.dp)
+                    .windowInsetsPadding(WindowInsets.navigationBars)
             ) {
-                var hue0 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(0).first }) }
-                var lightness0 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(0).second }) }
-                var brightness0 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(0).third }) }
-                SavedColor(
-                    {
-                        selectedHue = hue0
-                        selectedLightness = lightness0
-                        brightness = brightness0
-                        setBrightness(window, brightness0)
-                        scope.launch { DataStore(dataStore).savePreviousHue(hue0) }
-                        scope.launch { DataStore(dataStore).savePreviousLightness(lightness0) }
-                        scope.launch { DataStore(dataStore).savePreviousBrightness(brightness0) }
-                    },
-                    {
-                        scope.launch { DataStore(dataStore).savePreset(selectedHue, selectedLightness, brightness, 0) }
-                        hue0 = selectedHue
-                        lightness0 = selectedLightness
-                        brightness0 = brightness
-                    },
-                    Color.hsl(hue = hue0, saturation = 1f, lightness = lightness0)
-                )
+                Row(
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
+                ) {
+                    var hue0 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(0).first }) }
+                    var lightness0 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(0).second }) }
+                    var brightness0 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(0).third }) }
+                    SavedColor(
+                        {
+                            selectedHue = hue0
+                            selectedLightness = lightness0
+                            brightness = brightness0
+                            setBrightness(window, brightness0)
+                            scope.launch { DataStore(dataStore).savePreviousHue(hue0) }
+                            scope.launch { DataStore(dataStore).savePreviousLightness(lightness0) }
+                            scope.launch { DataStore(dataStore).savePreviousBrightness(brightness0) }
+                        },
+                        {
+                            scope.launch { DataStore(dataStore).savePreset(selectedHue, selectedLightness, brightness, 0) }
+                            hue0 = selectedHue
+                            lightness0 = selectedLightness
+                            brightness0 = brightness
+                        },
+                        Color.hsl(hue = hue0, saturation = 1f, lightness = lightness0)
+                    )
 
-                var hue1 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(1).first }) }
-                var lightness1 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(1).second }) }
-                var brightness1 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(1).third }) }
-                SavedColor(
-                    {
-                        selectedHue = hue1
-                        selectedLightness = lightness1
-                        brightness = brightness1
-                        setBrightness(window, brightness1)
-                        scope.launch { DataStore(dataStore).savePreviousHue(hue1) }
-                        scope.launch { DataStore(dataStore).savePreviousLightness(lightness1) }
-                        scope.launch { DataStore(dataStore).savePreviousBrightness(brightness1) }
-                    },
-                    {
-                        scope.launch { DataStore(dataStore).savePreset(selectedHue, selectedLightness, brightness, 1) }
-                        hue1 = selectedHue
-                        lightness1 = selectedLightness
-                        brightness1 = brightness
-                    },
-                    Color.hsl(hue = hue1, saturation = 1f, lightness = lightness1)
-                )
+                    var hue1 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(1).first }) }
+                    var lightness1 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(1).second }) }
+                    var brightness1 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(1).third }) }
+                    SavedColor(
+                        {
+                            selectedHue = hue1
+                            selectedLightness = lightness1
+                            brightness = brightness1
+                            setBrightness(window, brightness1)
+                            scope.launch { DataStore(dataStore).savePreviousHue(hue1) }
+                            scope.launch { DataStore(dataStore).savePreviousLightness(lightness1) }
+                            scope.launch { DataStore(dataStore).savePreviousBrightness(brightness1) }
+                        },
+                        {
+                            scope.launch { DataStore(dataStore).savePreset(selectedHue, selectedLightness, brightness, 1) }
+                            hue1 = selectedHue
+                            lightness1 = selectedLightness
+                            brightness1 = brightness
+                        },
+                        Color.hsl(hue = hue1, saturation = 1f, lightness = lightness1)
+                    )
 
-                var hue2 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(2).first }) }
-                var lightness2 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(2).second }) }
-                var brightness2 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(2).third }) }
-                SavedColor(
-                    {
-                        selectedHue = hue2
-                        selectedLightness = lightness2
-                        brightness = brightness2
-                        setBrightness(window, brightness2)
-                        scope.launch { DataStore(dataStore).savePreviousHue(hue2) }
-                        scope.launch { DataStore(dataStore).savePreviousLightness(lightness2) }
-                        scope.launch { DataStore(dataStore).savePreviousBrightness(brightness2) }
-                    },
-                    {
-                        scope.launch { DataStore(dataStore).savePreset(selectedHue, selectedLightness, brightness, 2) }
-                        hue2 = selectedHue
-                        lightness2 = selectedLightness
-                        brightness2 = brightness
-                    },
-                    Color.hsl(hue = hue2, saturation = 1f, lightness = lightness2)
-                )
-                Button(onClick = {
-                    startCandleEffect()
-                }) {
-                    Image(imageVector = Icons.Filled.Cake, contentDescription = null)
+                    var hue2 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(2).first }) }
+                    var lightness2 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(2).second }) }
+                    var brightness2 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(2).third }) }
+                    SavedColor(
+                        {
+                            selectedHue = hue2
+                            selectedLightness = lightness2
+                            brightness = brightness2
+                            setBrightness(window, brightness2)
+                            scope.launch { DataStore(dataStore).savePreviousHue(hue2) }
+                            scope.launch { DataStore(dataStore).savePreviousLightness(lightness2) }
+                            scope.launch { DataStore(dataStore).savePreviousBrightness(brightness2) }
+                        },
+                        {
+                            scope.launch { DataStore(dataStore).savePreset(selectedHue, selectedLightness, brightness, 2) }
+                            hue2 = selectedHue
+                            lightness2 = selectedLightness
+                            brightness2 = brightness
+                        },
+                        Color.hsl(hue = hue2, saturation = 1f, lightness = lightness2)
+                    )
+                    Button(onClick = { startCandleEffect() },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.White,
+                            contentColor = Color.Black
+                        )
+                    ) {
+                        Image(imageVector = Icons.Filled.Cake, contentDescription = null)
+                    }
                 }
+                PreferenceSlider(
+                    icon = Icons.Filled.Palette,
+                    range = 0f..360f,
+                    value = selectedHue,
+                    onValueChange = {
+                        selectedHue = it
+                        scope.launch { DataStore(dataStore).savePreviousHue(it) }
+                    }
+                )
+                PreferenceSlider(
+                    icon = Icons.Filled.Exposure,
+                    range = 0f..1f,
+                    value = selectedLightness,
+                    onValueChange = {
+                        selectedLightness = it
+                        scope.launch { DataStore(dataStore).savePreviousLightness(it) }
+                    }
+                )
+                PreferenceSlider(
+                    range = minBrightness..maxBrightness,
+                    icon = Icons.Filled.Brightness6,
+                    value = brightness,
+                    onValueChange = {
+                        brightness = it
+                        setBrightness(window, it)
+                        scope.launch { DataStore(dataStore).savePreviousBrightness(it) }
+                    }
+                )
+
+                OutlinedButton(
+                    onClick = { navController.navigate("settings") },
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.onSurface
+                    ),
+                    modifier = Modifier
+                        .padding(4.dp)
+                        .align(Alignment.CenterHorizontally),
+                    contentPadding = PaddingValues(start = 24.dp, end = 24.dp)
+                ) {
+                    Text(text = stringResource(id = R.string.settings))
+                }
+                
+                Spacer(modifier = Modifier.padding(4.dp))
             }
-            PreferenceSlider(
-                icon = Icons.Filled.Palette,
-                range = 0f..360f,
-                value = selectedHue,
-                onValueChange = {
-                    selectedHue = it
-                    scope.launch { DataStore(dataStore).savePreviousHue(it) }
-                }
-            )
-            PreferenceSlider(
-                icon = Icons.Filled.Exposure,
-                range = 0f..1f,
-                value = selectedLightness,
-                onValueChange = {
-                    selectedLightness = it
-                    scope.launch { DataStore(dataStore).savePreviousLightness(it) }
-                }
-            )
-            PreferenceSlider(
-                range = minBrightness..maxBrightness,
-                icon = Icons.Filled.Brightness6,
-                value = brightness,
-                onValueChange = {
-                    brightness = it
-                    setBrightness(window, it)
-                    scope.launch { DataStore(dataStore).savePreviousBrightness(it) }
-                }
-            )
-
-            OutlinedButton(
-                onClick = { navController.navigate("settings") },
-                modifier = Modifier
-                    .padding(4.dp)
-                    .align(Alignment.CenterHorizontally),
-                contentPadding = PaddingValues(start = 24.dp, end = 24.dp)
-            ) {
-                Text(text = stringResource(id = R.string.settings))
-            }
-            Spacer(modifier = Modifier.padding(vertical = 16.dp))
         },
         content = {
             Surface(
@@ -508,7 +525,7 @@ fun Torch(dataStore: DataStore<Preferences>, navController: NavHostController) {
                                 scope.launch { scaffoldState.bottomSheetState.expand() }
                             }
                                   },
-                        modifier = Modifier.padding(16.dp),
+                        modifier = Modifier.padding(8.dp),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = buttonColor),
                         contentPadding = PaddingValues(start = 16.dp, end = 24.dp)
                     ) {
@@ -567,6 +584,10 @@ fun PreferenceSlider(
         Slider(
             modifier = Modifier.padding(end = 8.dp),
             value = value,
+            colors = SliderDefaults.colors(
+                thumbColor = MaterialTheme.colorScheme.onSurface,
+                activeTrackColor = MaterialTheme.colorScheme.onSurface
+            ),
             valueRange = range,
             onValueChange = onValueChange
         )
