@@ -5,6 +5,9 @@ A very simple app that allows you to use your display as a torch. The brightness
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
 alt="Get it on F-Droid"
 height="80">](https://f-droid.org/packages/com.elasticrock.candle/)
+[<img src="https://raw.githubusercontent.com/Kunzisoft/Github-badge/main/get-it-on-github.png"
+alt="Get it on GitHub"
+height="80">](https://github.com/elastic-rock/Candle/releases/latest)
 
 **Screenshots**
 
