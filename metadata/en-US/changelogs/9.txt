@@ -1,0 +1,3 @@
+ - Added the option a settings toggle for keeping the screen on
+ - Slightly improved edge to edge drawing
+ - Updated dependencies
