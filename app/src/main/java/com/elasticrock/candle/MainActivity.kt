@@ -18,6 +18,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -116,7 +117,6 @@ class MainActivity : ComponentActivity() {
         runBlocking { setBrightness(window, DataStore(dataStore).readPreviousBrightness()) }
 
         enableEdgeToEdge()
-        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
             CandleTheme {
                 TorchApp(dataStore)
@@ -185,6 +185,12 @@ fun TorchApp(dataStore: DataStore<Preferences>) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Settings(navController: NavHostController, onKeepScreenOnPreferenceChange: (() -> Unit) = {}, keepScreenOn: Boolean) {
+    val view = LocalView.current
+    val window = (view.context as Activity).window
+    if (!view.isInEditMode) {
+        WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !isSystemInDarkTheme()
+    }
+
     Scaffold(Modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
@@ -197,8 +203,8 @@ fun Settings(navController: NavHostController, onKeepScreenOnPreferenceChange: (
                 }
             )
         },
-        content = { padding ->
-            LazyColumn(Modifier.padding(padding)) {
+        content = { innerPadding ->
+            LazyColumn(contentPadding = innerPadding) {
                 item {
                     PreferenceSwitch(
                         title = stringResource(id = R.string.keep_screen_on),
