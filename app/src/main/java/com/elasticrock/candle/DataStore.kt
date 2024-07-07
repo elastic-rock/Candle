@@ -19,7 +19,17 @@ class DataStore(private val dataStore: DataStore<Preferences>) {
     private val previousHueKey = floatPreferencesKey("previousHue")
     private val previousLightnessKey = floatPreferencesKey("previousLightness")
     private val keepScreenOnKey = booleanPreferencesKey("keepscreenon")
+    private val lockScreenAllowedKey = booleanPreferencesKey("lockScreenAllowed")
 
+    suspend fun saveLockScreenAllowed(lockScreenAllowed: Boolean) {
+        try {
+            dataStore.edit { preferences ->
+                preferences[lockScreenAllowedKey] = lockScreenAllowed
+            }
+        } catch (e: IOException) {
+            Log.e(tag,"Error writing lock screen allowed setting")
+        }
+    }
 
     suspend fun saveKeepScreenOn(keepScreenOn: Boolean) {
         try {
@@ -130,5 +140,13 @@ class DataStore(private val dataStore: DataStore<Preferences>) {
                 preferences[keepScreenOnKey] ?: true
             }
         return keepScreenOn.first()
+    }
+
+    suspend fun readLockScreenAllowed() : Boolean {
+        val lockScreenAllowed: Flow<Boolean> = dataStore.data
+            .map { preferences ->
+                preferences[lockScreenAllowedKey] ?: true
+            }
+        return lockScreenAllowed.first()
     }
 }

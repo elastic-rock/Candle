@@ -41,7 +41,9 @@ import androidx.compose.material.icons.filled.Brightness6
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.Exposure
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.LockClock
 import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.BottomSheetScaffold
@@ -110,16 +112,12 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-            setShowWhenLocked(true)
-        }
-
         runBlocking { setBrightness(window, DataStore(dataStore).readPreviousBrightness()) }
 
         enableEdgeToEdge()
         setContent {
             CandleTheme {
-                TorchApp(dataStore)
+                TorchApp(dataStore, this)
             }
         }
 
@@ -140,7 +138,7 @@ private const val horizontal = 8
 private const val vertical = 16
 
 @Composable
-fun TorchApp(dataStore: DataStore<Preferences>) {
+fun TorchApp(dataStore: DataStore<Preferences>, activity: ComponentActivity) {
     val view = LocalView.current
     val window = (view.context as Activity).window
     var keepScreenOn by remember { mutableStateOf(runBlocking { DataStore(dataStore).readKeepScreenOn() }) }
@@ -155,11 +153,30 @@ fun TorchApp(dataStore: DataStore<Preferences>) {
             scope.launch { DataStore(dataStore).saveKeepScreenOn(false) }
         }
     }
+    var allowOnLockScreen by remember { mutableStateOf(runBlocking { DataStore(dataStore).readLockScreenAllowed() }) }
+    val onAllowOnLockScreenPreferenceChange = {
+        if (!allowOnLockScreen) {
+            allowOnLockScreen = true
+            scope.launch { DataStore(dataStore).saveLockScreenAllowed(true) }
+
+        } else {
+            allowOnLockScreen = false
+            scope.launch { DataStore(dataStore).saveLockScreenAllowed(false) }
+        }
+    }
 
     if (keepScreenOn) {
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     } else {
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    }
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+        if (allowOnLockScreen) {
+            activity.setShowWhenLocked(true)
+        } else {
+            activity.setShowWhenLocked(false)
+        }
     }
 
     val navController = rememberNavController()
@@ -176,7 +193,9 @@ fun TorchApp(dataStore: DataStore<Preferences>) {
             Settings(
                 navController = navController,
                 onKeepScreenOnPreferenceChange = { onKeepScreenOnPreferenceChange() },
-                keepScreenOn = keepScreenOn
+                keepScreenOn = keepScreenOn,
+                allowOnLockScreen = allowOnLockScreen,
+                onAllowOnLockScreenPreferenceChange = { onAllowOnLockScreenPreferenceChange() }
             )
         }
     }
@@ -184,7 +203,7 @@ fun TorchApp(dataStore: DataStore<Preferences>) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Settings(navController: NavHostController, onKeepScreenOnPreferenceChange: (() -> Unit) = {}, keepScreenOn: Boolean) {
+fun Settings(navController: NavHostController, onKeepScreenOnPreferenceChange: () -> Unit, keepScreenOn: Boolean, onAllowOnLockScreenPreferenceChange: () -> Unit, allowOnLockScreen: Boolean) {
     val view = LocalView.current
     val window = (view.context as Activity).window
     if (!view.isInEditMode) {
@@ -209,10 +228,22 @@ fun Settings(navController: NavHostController, onKeepScreenOnPreferenceChange: (
                     PreferenceSwitch(
                         title = stringResource(id = R.string.keep_screen_on),
                         description = stringResource(id = R.string.keep_screen_on_description),
-                        icon = Icons.Filled.Lock,
+                        icon = Icons.Filled.Timer,
                         isChecked = keepScreenOn,
-                        onClick = { onKeepScreenOnPreferenceChange() }
+                        onClick = onKeepScreenOnPreferenceChange
                     )
+                }
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+                    item {
+                        PreferenceSwitch(
+                            title = stringResource(id = R.string.allow_on_lock_screen),
+                            description = stringResource(id = R.string.allow_on_lock_screen_description),
+                            icon = Icons.Filled.Lock,
+                            isChecked = allowOnLockScreen,
+                            onClick = onAllowOnLockScreenPreferenceChange
+                        )
+                    }
                 }
             }
         }
