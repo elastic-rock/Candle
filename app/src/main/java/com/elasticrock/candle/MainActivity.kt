@@ -41,7 +41,6 @@ import androidx.compose.material.icons.filled.Brightness6
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.Exposure
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.LockClock
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Tune

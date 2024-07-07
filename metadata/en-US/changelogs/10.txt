@@ -1,0 +1,1 @@
+ - Added a setting for allowing the app to be used while the device is locked
