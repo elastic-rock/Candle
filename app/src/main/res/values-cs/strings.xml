@@ -6,4 +6,6 @@
     <string name="settings">Nastavení</string>
     <string name="keep_screen_on">Nevypínat obrazovku</string>
     <string name="keep_screen_on_description">Zabránění vypnutí obrazovky</string>
+    <string name="allow_on_lock_screen">Povolit na zamykací obrazovce</string>
+    <string name="allow_on_lock_screen_description">Umožnit používaní aplikace když je zařízení zamčené</string>
 </resources>

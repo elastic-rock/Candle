@@ -6,4 +6,6 @@
     <string name="settings">Paramètres</string>
     <string name="keep_screen_on">Maintenir l\'écran allumé</string>
     <string name="keep_screen_on_description">Empêcher l\'écran de s\'éteindre</string>
+    <string name="allow_on_lock_screen">Autoriser sur l\'écran verrouillé</string>
+    <string name="allow_on_lock_screen_description">Autoriser l\'utilisation de l\'application lorsque l\'appareil est verrouillé</string>
 </resources>
