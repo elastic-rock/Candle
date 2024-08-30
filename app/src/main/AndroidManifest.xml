@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Candle"
         android:localeConfig="@xml/locales_config"
-        tools:targetApi="34">
+        tools:targetApi="35">
         <activity
             android:name=".MainActivity"
             android:exported="true"
