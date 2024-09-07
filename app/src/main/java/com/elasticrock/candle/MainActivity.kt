@@ -111,7 +111,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        runBlocking { setBrightness(window, DataStore(dataStore).readPreviousBrightness()) }
+        runBlocking { setBrightness(window, com.elasticrock.candle.data.preferences.PreferencesRepository(
+            dataStore
+        ).readPreviousBrightness()) }
 
         enableEdgeToEdge()
         setContent {
@@ -140,27 +142,31 @@ private const val vertical = 16
 fun TorchApp(dataStore: DataStore<Preferences>, activity: ComponentActivity) {
     val view = LocalView.current
     val window = (view.context as Activity).window
-    var keepScreenOn by remember { mutableStateOf(runBlocking { DataStore(dataStore).readKeepScreenOn() }) }
+    var keepScreenOn by remember { mutableStateOf(runBlocking { com.elasticrock.candle.data.preferences.PreferencesRepository(
+        dataStore
+    ).readKeepScreenOn() }) }
     val scope = rememberCoroutineScope()
     val onKeepScreenOnPreferenceChange = {
         if (!keepScreenOn) {
             keepScreenOn = true
-            scope.launch { DataStore(dataStore).saveKeepScreenOn(true) }
+            scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(dataStore).saveKeepScreenOn(true) }
 
         } else {
             keepScreenOn = false
-            scope.launch { DataStore(dataStore).saveKeepScreenOn(false) }
+            scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(dataStore).saveKeepScreenOn(false) }
         }
     }
-    var allowOnLockScreen by remember { mutableStateOf(runBlocking { DataStore(dataStore).readLockScreenAllowed() }) }
+    var allowOnLockScreen by remember { mutableStateOf(runBlocking { com.elasticrock.candle.data.preferences.PreferencesRepository(
+        dataStore
+    ).readLockScreenAllowed() }) }
     val onAllowOnLockScreenPreferenceChange = {
         if (!allowOnLockScreen) {
             allowOnLockScreen = true
-            scope.launch { DataStore(dataStore).saveLockScreenAllowed(true) }
+            scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(dataStore).saveLockScreenAllowed(true) }
 
         } else {
             allowOnLockScreen = false
-            scope.launch { DataStore(dataStore).saveLockScreenAllowed(false) }
+            scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(dataStore).saveLockScreenAllowed(false) }
         }
     }
 
@@ -359,9 +365,15 @@ fun PreferenceItemDescription(
 @Composable
 fun Torch(dataStore: DataStore<Preferences>, navController: NavHostController) {
     val scaffoldState = rememberBottomSheetScaffoldState(rememberStandardBottomSheetState(skipHiddenState = false))
-    var brightness by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreviousBrightness() }) }
-    var selectedHue by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreviousHue() }) }
-    var selectedLightness by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreviousLightness() }) }
+    var brightness by remember { mutableFloatStateOf(runBlocking { com.elasticrock.candle.data.preferences.PreferencesRepository(
+        dataStore
+    ).readPreviousBrightness() }) }
+    var selectedHue by remember { mutableFloatStateOf(runBlocking { com.elasticrock.candle.data.preferences.PreferencesRepository(
+        dataStore
+    ).readPreviousHue() }) }
+    var selectedLightness by remember { mutableFloatStateOf(runBlocking { com.elasticrock.candle.data.preferences.PreferencesRepository(
+        dataStore
+    ).readPreviousLightness() }) }
     val scope = rememberCoroutineScope()
     val view = LocalView.current
     val window = (view.context as Activity).window
@@ -423,21 +435,35 @@ fun Torch(dataStore: DataStore<Preferences>, navController: NavHostController) {
                         .fillMaxWidth()
                         .padding(vertical = 4.dp)
                 ) {
-                    var hue0 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(0).first }) }
-                    var lightness0 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(0).second }) }
-                    var brightness0 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(0).third }) }
+                    var hue0 by remember { mutableFloatStateOf(runBlocking { com.elasticrock.candle.data.preferences.PreferencesRepository(
+                        dataStore
+                    ).readPreset(0).first }) }
+                    var lightness0 by remember { mutableFloatStateOf(runBlocking { com.elasticrock.candle.data.preferences.PreferencesRepository(
+                        dataStore
+                    ).readPreset(0).second }) }
+                    var brightness0 by remember { mutableFloatStateOf(runBlocking { com.elasticrock.candle.data.preferences.PreferencesRepository(
+                        dataStore
+                    ).readPreset(0).third }) }
                     SavedColor(
                         {
                             selectedHue = hue0
                             selectedLightness = lightness0
                             brightness = brightness0
                             setBrightness(window, brightness0)
-                            scope.launch { DataStore(dataStore).savePreviousHue(hue0) }
-                            scope.launch { DataStore(dataStore).savePreviousLightness(lightness0) }
-                            scope.launch { DataStore(dataStore).savePreviousBrightness(brightness0) }
+                            scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(
+                                dataStore
+                            ).savePreviousHue(hue0) }
+                            scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(
+                                dataStore
+                            ).savePreviousLightness(lightness0) }
+                            scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(
+                                dataStore
+                            ).savePreviousBrightness(brightness0) }
                         },
                         {
-                            scope.launch { DataStore(dataStore).savePreset(selectedHue, selectedLightness, brightness, 0) }
+                            scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(
+                                dataStore
+                            ).savePreset(selectedHue, selectedLightness, brightness, 0) }
                             hue0 = selectedHue
                             lightness0 = selectedLightness
                             brightness0 = brightness
@@ -445,21 +471,35 @@ fun Torch(dataStore: DataStore<Preferences>, navController: NavHostController) {
                         Color.hsl(hue = hue0, saturation = 1f, lightness = lightness0)
                     )
 
-                    var hue1 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(1).first }) }
-                    var lightness1 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(1).second }) }
-                    var brightness1 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(1).third }) }
+                    var hue1 by remember { mutableFloatStateOf(runBlocking { com.elasticrock.candle.data.preferences.PreferencesRepository(
+                        dataStore
+                    ).readPreset(1).first }) }
+                    var lightness1 by remember { mutableFloatStateOf(runBlocking { com.elasticrock.candle.data.preferences.PreferencesRepository(
+                        dataStore
+                    ).readPreset(1).second }) }
+                    var brightness1 by remember { mutableFloatStateOf(runBlocking { com.elasticrock.candle.data.preferences.PreferencesRepository(
+                        dataStore
+                    ).readPreset(1).third }) }
                     SavedColor(
                         {
                             selectedHue = hue1
                             selectedLightness = lightness1
                             brightness = brightness1
                             setBrightness(window, brightness1)
-                            scope.launch { DataStore(dataStore).savePreviousHue(hue1) }
-                            scope.launch { DataStore(dataStore).savePreviousLightness(lightness1) }
-                            scope.launch { DataStore(dataStore).savePreviousBrightness(brightness1) }
+                            scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(
+                                dataStore
+                            ).savePreviousHue(hue1) }
+                            scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(
+                                dataStore
+                            ).savePreviousLightness(lightness1) }
+                            scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(
+                                dataStore
+                            ).savePreviousBrightness(brightness1) }
                         },
                         {
-                            scope.launch { DataStore(dataStore).savePreset(selectedHue, selectedLightness, brightness, 1) }
+                            scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(
+                                dataStore
+                            ).savePreset(selectedHue, selectedLightness, brightness, 1) }
                             hue1 = selectedHue
                             lightness1 = selectedLightness
                             brightness1 = brightness
@@ -467,21 +507,35 @@ fun Torch(dataStore: DataStore<Preferences>, navController: NavHostController) {
                         Color.hsl(hue = hue1, saturation = 1f, lightness = lightness1)
                     )
 
-                    var hue2 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(2).first }) }
-                    var lightness2 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(2).second }) }
-                    var brightness2 by remember { mutableFloatStateOf(runBlocking { DataStore(dataStore).readPreset(2).third }) }
+                    var hue2 by remember { mutableFloatStateOf(runBlocking { com.elasticrock.candle.data.preferences.PreferencesRepository(
+                        dataStore
+                    ).readPreset(2).first }) }
+                    var lightness2 by remember { mutableFloatStateOf(runBlocking { com.elasticrock.candle.data.preferences.PreferencesRepository(
+                        dataStore
+                    ).readPreset(2).second }) }
+                    var brightness2 by remember { mutableFloatStateOf(runBlocking { com.elasticrock.candle.data.preferences.PreferencesRepository(
+                        dataStore
+                    ).readPreset(2).third }) }
                     SavedColor(
                         {
                             selectedHue = hue2
                             selectedLightness = lightness2
                             brightness = brightness2
                             setBrightness(window, brightness2)
-                            scope.launch { DataStore(dataStore).savePreviousHue(hue2) }
-                            scope.launch { DataStore(dataStore).savePreviousLightness(lightness2) }
-                            scope.launch { DataStore(dataStore).savePreviousBrightness(brightness2) }
+                            scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(
+                                dataStore
+                            ).savePreviousHue(hue2) }
+                            scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(
+                                dataStore
+                            ).savePreviousLightness(lightness2) }
+                            scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(
+                                dataStore
+                            ).savePreviousBrightness(brightness2) }
                         },
                         {
-                            scope.launch { DataStore(dataStore).savePreset(selectedHue, selectedLightness, brightness, 2) }
+                            scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(
+                                dataStore
+                            ).savePreset(selectedHue, selectedLightness, brightness, 2) }
                             hue2 = selectedHue
                             lightness2 = selectedLightness
                             brightness2 = brightness
@@ -503,7 +557,7 @@ fun Torch(dataStore: DataStore<Preferences>, navController: NavHostController) {
                     value = selectedHue,
                     onValueChange = {
                         selectedHue = it
-                        scope.launch { DataStore(dataStore).savePreviousHue(it) }
+                        scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(dataStore).savePreviousHue(it) }
                     }
                 )
                 PreferenceSlider(
@@ -512,7 +566,7 @@ fun Torch(dataStore: DataStore<Preferences>, navController: NavHostController) {
                     value = selectedLightness,
                     onValueChange = {
                         selectedLightness = it
-                        scope.launch { DataStore(dataStore).savePreviousLightness(it) }
+                        scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(dataStore).savePreviousLightness(it) }
                     }
                 )
                 PreferenceSlider(
@@ -522,7 +576,7 @@ fun Torch(dataStore: DataStore<Preferences>, navController: NavHostController) {
                     onValueChange = {
                         brightness = it
                         setBrightness(window, it)
-                        scope.launch { DataStore(dataStore).savePreviousBrightness(it) }
+                        scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(dataStore).savePreviousBrightness(it) }
                     }
                 )
 

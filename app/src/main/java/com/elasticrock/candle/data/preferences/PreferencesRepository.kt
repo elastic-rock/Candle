@@ -1,4 +1,4 @@
-package com.elasticrock.candle
+package com.elasticrock.candle.data.preferences
 
 import android.util.Log
 import androidx.datastore.core.DataStore
@@ -6,12 +6,13 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
+import com.elasticrock.candle.maxBrightness
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.io.IOException
 
-class DataStore(private val dataStore: DataStore<Preferences>) {
+class PreferencesRepository(private val dataStore: DataStore<Preferences>) {
 
     private val tag = "DataStore"
 
