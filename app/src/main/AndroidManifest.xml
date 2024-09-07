@@ -12,6 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Candle"
         android:localeConfig="@xml/locales_config"
+        android:name=".CandleApplication"
         tools:targetApi="35">
         <activity
             android:name=".MainActivity"
