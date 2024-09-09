@@ -10,6 +10,7 @@
     <string name="allow_on_lock_screen_description">Umožnit používaní aplikace když je zařízení zamčené</string>
     <string name="author">Autor</string>
     <string name="source_code">Zdrojový kód</string>
+    <string name="application_id">ID aplikace</string>
     <string name="version">Verze</string>
     <string name="license">Licence</string>
     <string name="about">O Aplikaci</string>

@@ -135,7 +135,7 @@ fun SettingsScreen(
                 }
 
                 item {
-                    val appId = "com.elasticrock.keepscreenon"
+                    val appId = "com.elasticrock.candle"
                     AboutItem(
                         title = stringResource(id = R.string.application_id),
                         subtitle = appId,

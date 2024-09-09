@@ -11,7 +11,7 @@
     <string name="david_weis" translatable="false">David Weis</string>
     <string name="source_code">Source code</string>
     <string name="github" translatable="false">GitHub</string>
-    <string name="application_id" translatable="false">com.elasticrock.candle</string>
+    <string name="application_id">Application ID</string>
     <string name="version">Version</string>
     <string name="license">License</string>
     <string name="about">About</string>
