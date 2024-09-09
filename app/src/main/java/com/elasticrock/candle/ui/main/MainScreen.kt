@@ -32,12 +32,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -45,77 +41,68 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.navigation.NavHostController
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.elasticrock.candle.R
 import com.elasticrock.candle.ui.components.PreferenceSlider
 import com.elasticrock.candle.ui.components.SavedColor
 import com.elasticrock.candle.util.maxBrightness
 import com.elasticrock.candle.util.minBrightness
 import com.elasticrock.candle.util.setBrightness
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(dataStore: DataStore<Preferences>, navController: NavHostController) {
+fun MainScreen(
+    viewModel: MainScreenViewModel = hiltViewModel(),
+    onNavigateToSettings: () -> Unit,
+    onKeepScreenOn: () -> Unit,
+    onAllowOnLockScreen: () -> Unit
+) {
     val scaffoldState = rememberBottomSheetScaffoldState(rememberStandardBottomSheetState(skipHiddenState = false))
-    var brightness by remember { mutableFloatStateOf(runBlocking { com.elasticrock.candle.data.preferences.PreferencesRepository(
-        dataStore
-    ).readPreviousBrightness() }) }
-    var selectedHue by remember { mutableFloatStateOf(runBlocking { com.elasticrock.candle.data.preferences.PreferencesRepository(
-        dataStore
-    ).readPreviousHue() }) }
-    var selectedLightness by remember { mutableFloatStateOf(runBlocking { com.elasticrock.candle.data.preferences.PreferencesRepository(
-        dataStore
-    ).readPreviousLightness() }) }
+    val state = viewModel.state.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
+
+    val brightness = state.value.brightness
+    val selectedHue = state.value.hue
+    val selectedLightness = state.value.lightness
+
+    val isCandleEffectRunning = state.value.isCandleEffectRunning
+
+    val keepScreenOn = state.value.keepScreenOn
+    val allowOnLockScreen = state.value.allowOnLockScreen
+
     val view = LocalView.current
     val window = (view.context as Activity).window
+
+    LaunchedEffect(brightness) {
+        setBrightness(window, brightness)
+    }
+
+    LaunchedEffect(keepScreenOn) {
+        if (keepScreenOn) {
+            onKeepScreenOn()
+        }
+    }
+
+    LaunchedEffect(allowOnLockScreen) {
+        if (allowOnLockScreen) {
+            onAllowOnLockScreen()
+        }
+    }
 
     if (!view.isInEditMode) {
         WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = selectedLightness > 0.5f
     }
 
-    var isCandleEffectRunning by remember { mutableStateOf(false) }
-    var candleJob: Job? = null
-
-    suspend fun simulateCandleEffect() {
-
-        val updateIntervalMillis: Long = 200
-        val lightnessRandomRange = 0.15f
-
-        while (isCandleEffectRunning) {
-            val lightnessRandom = (Math.random() * lightnessRandomRange).toFloat()
-
-            val hue = 30f
-            val lightness = 0.4f + lightnessRandom
-
-            selectedHue = hue
-            selectedLightness = lightness.coerceIn(0f, 1f)
-
-            delay(updateIntervalMillis)
-        }
-    }
-
     fun startCandleEffect() {
-        if (!isCandleEffectRunning) {
-            isCandleEffectRunning = true
-            scope.launch { scaffoldState.bottomSheetState.hide() }
-            candleJob = scope.launch {
-                simulateCandleEffect()
-            }
-        }
+        scope.launch { scaffoldState.bottomSheetState.hide() }
+        viewModel.startCandleEffect()
     }
 
     fun stopCandleEffect() {
-        isCandleEffectRunning = false
-        candleJob?.cancel()
+        viewModel.stopCandleEffect()
     }
-
 
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
@@ -133,110 +120,38 @@ fun MainScreen(dataStore: DataStore<Preferences>, navController: NavHostControll
                         .fillMaxWidth()
                         .padding(vertical = 4.dp)
                 ) {
-                    var hue0 by remember { mutableFloatStateOf(runBlocking { com.elasticrock.candle.data.preferences.PreferencesRepository(
-                        dataStore
-                    ).readPreset(0).first }) }
-                    var lightness0 by remember { mutableFloatStateOf(runBlocking { com.elasticrock.candle.data.preferences.PreferencesRepository(
-                        dataStore
-                    ).readPreset(0).second }) }
-                    var brightness0 by remember { mutableFloatStateOf(runBlocking { com.elasticrock.candle.data.preferences.PreferencesRepository(
-                        dataStore
-                    ).readPreset(0).third }) }
+                    val hue0 = state.value.hue0
+                    val lightness0 = state.value.lightness0
                     SavedColor(
                         {
-                            selectedHue = hue0
-                            selectedLightness = lightness0
-                            brightness = brightness0
-                            setBrightness(window, brightness0)
-                            scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(
-                                dataStore
-                            ).savePreviousHue(hue0) }
-                            scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(
-                                dataStore
-                            ).savePreviousLightness(lightness0) }
-                            scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(
-                                dataStore
-                            ).savePreviousBrightness(brightness0) }
+                            viewModel.loadPreset(0)
                         },
                         {
-                            scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(
-                                dataStore
-                            ).savePreset(selectedHue, selectedLightness, brightness, 0) }
-                            hue0 = selectedHue
-                            lightness0 = selectedLightness
-                            brightness0 = brightness
+                            viewModel.savePreset(selectedHue, selectedLightness, brightness, 0)
                         },
                         Color.hsl(hue = hue0, saturation = 1f, lightness = lightness0)
                     )
 
-                    var hue1 by remember { mutableFloatStateOf(runBlocking { com.elasticrock.candle.data.preferences.PreferencesRepository(
-                        dataStore
-                    ).readPreset(1).first }) }
-                    var lightness1 by remember { mutableFloatStateOf(runBlocking { com.elasticrock.candle.data.preferences.PreferencesRepository(
-                        dataStore
-                    ).readPreset(1).second }) }
-                    var brightness1 by remember { mutableFloatStateOf(runBlocking { com.elasticrock.candle.data.preferences.PreferencesRepository(
-                        dataStore
-                    ).readPreset(1).third }) }
+                    val hue1 = state.value.hue1
+                    val lightness1 = state.value.lightness1
                     SavedColor(
                         {
-                            selectedHue = hue1
-                            selectedLightness = lightness1
-                            brightness = brightness1
-                            setBrightness(window, brightness1)
-                            scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(
-                                dataStore
-                            ).savePreviousHue(hue1) }
-                            scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(
-                                dataStore
-                            ).savePreviousLightness(lightness1) }
-                            scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(
-                                dataStore
-                            ).savePreviousBrightness(brightness1) }
+                            viewModel.loadPreset(1)
                         },
                         {
-                            scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(
-                                dataStore
-                            ).savePreset(selectedHue, selectedLightness, brightness, 1) }
-                            hue1 = selectedHue
-                            lightness1 = selectedLightness
-                            brightness1 = brightness
+                            viewModel.savePreset(selectedHue, selectedLightness, brightness, 1)
                         },
                         Color.hsl(hue = hue1, saturation = 1f, lightness = lightness1)
                     )
 
-                    var hue2 by remember { mutableFloatStateOf(runBlocking { com.elasticrock.candle.data.preferences.PreferencesRepository(
-                        dataStore
-                    ).readPreset(2).first }) }
-                    var lightness2 by remember { mutableFloatStateOf(runBlocking { com.elasticrock.candle.data.preferences.PreferencesRepository(
-                        dataStore
-                    ).readPreset(2).second }) }
-                    var brightness2 by remember { mutableFloatStateOf(runBlocking { com.elasticrock.candle.data.preferences.PreferencesRepository(
-                        dataStore
-                    ).readPreset(2).third }) }
+                    val hue2 = state.value.hue2
+                    val lightness2 = state.value.lightness2
                     SavedColor(
                         {
-                            selectedHue = hue2
-                            selectedLightness = lightness2
-                            brightness = brightness2
-                            setBrightness(window, brightness2)
-                            scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(
-                                dataStore
-                            ).savePreviousHue(hue2) }
-                            scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(
-                                dataStore
-                            ).savePreviousLightness(lightness2) }
-                            scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(
-                                dataStore
-                            ).savePreviousBrightness(brightness2) }
+                            viewModel.loadPreset(2)
                         },
                         {
-                            scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(
-                                dataStore
-                            ).savePreset(selectedHue, selectedLightness, brightness, 2) }
-                            hue2 = selectedHue
-                            lightness2 = selectedLightness
-                            brightness2 = brightness
+                            viewModel.savePreset(selectedHue, selectedLightness, brightness, 2)
                         },
                         Color.hsl(hue = hue2, saturation = 1f, lightness = lightness2)
                     )
@@ -254,8 +169,10 @@ fun MainScreen(dataStore: DataStore<Preferences>, navController: NavHostControll
                     range = 0f..360f,
                     value = selectedHue,
                     onValueChange = {
-                        selectedHue = it
-                        scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(dataStore).savePreviousHue(it) }
+                        viewModel.onHueChange(it)
+                    },
+                    onValueChangeFinished = {
+                        viewModel.onHueSave()
                     }
                 )
                 PreferenceSlider(
@@ -263,8 +180,10 @@ fun MainScreen(dataStore: DataStore<Preferences>, navController: NavHostControll
                     range = 0f..1f,
                     value = selectedLightness,
                     onValueChange = {
-                        selectedLightness = it
-                        scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(dataStore).savePreviousLightness(it) }
+                        viewModel.onLightnessChange(it)
+                    },
+                    onValueChangeFinished = {
+                        viewModel.onLightnessSave()
                     }
                 )
                 PreferenceSlider(
@@ -272,14 +191,15 @@ fun MainScreen(dataStore: DataStore<Preferences>, navController: NavHostControll
                     icon = Icons.Filled.Brightness6,
                     value = brightness,
                     onValueChange = {
-                        brightness = it
-                        setBrightness(window, it)
-                        scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(dataStore).savePreviousBrightness(it) }
+                        viewModel.onBrightnessChange(it)
+                    },
+                    onValueChangeFinished = {
+                        viewModel.onBrightnessSave()
                     }
                 )
 
                 OutlinedButton(
-                    onClick = { navController.navigate("settings") },
+                    onClick = onNavigateToSettings,
                     colors = ButtonDefaults.outlinedButtonColors(
                         contentColor = MaterialTheme.colorScheme.onSurface
                     ),

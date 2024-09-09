@@ -20,27 +20,38 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.core.view.WindowCompat
-import androidx.navigation.NavHostController
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.elasticrock.candle.R
 import com.elasticrock.candle.ui.components.PreferenceSwitch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(navController: NavHostController, onKeepScreenOnPreferenceChange: () -> Unit, keepScreenOn: Boolean, onAllowOnLockScreenPreferenceChange: () -> Unit, allowOnLockScreen: Boolean) {
+fun SettingsScreen(
+    onBackArrowClick: () -> Unit,
+    onLicensesOptionClick: () -> Unit,
+    onEnableKeepScreenOn: () -> Unit,
+    onDisableKeepScreenOn: () -> Unit,
+    onAllowOnLockScreen: () -> Unit,
+    onDisallowOnLockScreen: () -> Unit,
+    viewModel: SettingsScreenViewModel = hiltViewModel()
+) {
     val view = LocalView.current
     val window = (view.context as Activity).window
     if (!view.isInEditMode) {
         WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !isSystemInDarkTheme()
     }
 
+    val state = viewModel.state.collectAsStateWithLifecycle()
+    val keepScreenOn = state.value.keepScreenOn
+    val allowOnLockScreen = state.value.allowOnLockScreen
+
     Scaffold(
         Modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.settings)) },
-                navigationIcon = { IconButton(onClick = {
-                    navController.navigate("main")
-                }) {
+                navigationIcon = { IconButton(onClick = onBackArrowClick) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, "Go back")
                 }
                 }
@@ -54,7 +65,15 @@ fun SettingsScreen(navController: NavHostController, onKeepScreenOnPreferenceCha
                         description = stringResource(id = R.string.keep_screen_on_description),
                         icon = Icons.Filled.Timer,
                         isChecked = keepScreenOn,
-                        onClick = onKeepScreenOnPreferenceChange
+                        onClick = {
+                            if (keepScreenOn) {
+                                onDisableKeepScreenOn()
+                                viewModel.onKeepScreenOnChange(false)
+                            } else {
+                                onEnableKeepScreenOn()
+                                viewModel.onKeepScreenOnChange(true)
+                            }
+                        }
                     )
                 }
 
@@ -65,7 +84,15 @@ fun SettingsScreen(navController: NavHostController, onKeepScreenOnPreferenceCha
                             description = stringResource(id = R.string.allow_on_lock_screen_description),
                             icon = Icons.Filled.Lock,
                             isChecked = allowOnLockScreen,
-                            onClick = onAllowOnLockScreenPreferenceChange
+                            onClick = {
+                                if (allowOnLockScreen) {
+                                    onDisallowOnLockScreen()
+                                    viewModel.onAllowOnLockScreenChange(false)
+                                } else {
+                                    onAllowOnLockScreen()
+                                    viewModel.onAllowOnLockScreenChange(true)
+                                }
+                            }
                         )
                     }
                 }

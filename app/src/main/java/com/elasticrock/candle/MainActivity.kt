@@ -3,7 +3,6 @@ package com.elasticrock.candle
 import android.app.Activity
 import android.app.StatusBarManager
 import android.content.ComponentName
-import android.content.Context
 import android.content.pm.ActivityInfo
 import android.os.Build
 import android.os.Bundle
@@ -14,40 +13,25 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalView
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.preferencesDataStore
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.elasticrock.candle.ui.main.MainScreen
 import com.elasticrock.candle.ui.settings.SettingsScreen
 import com.elasticrock.candle.ui.theme.CandleTheme
-import com.elasticrock.candle.util.setBrightness
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import dagger.hilt.android.AndroidEntryPoint
 
-val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "preferences")
-
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        runBlocking { setBrightness(window, com.elasticrock.candle.data.preferences.PreferencesRepository(
-            dataStore
-        ).readPreviousBrightness()) }
-
         enableEdgeToEdge()
         setContent {
             CandleTheme {
-                TorchApp(dataStore, this)
+                TorchApp(this)
             }
         }
 
@@ -65,50 +49,9 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun TorchApp(dataStore: DataStore<Preferences>, activity: ComponentActivity) {
+fun TorchApp(activity: ComponentActivity) {
     val view = LocalView.current
     val window = (view.context as Activity).window
-    var keepScreenOn by remember { mutableStateOf(runBlocking { com.elasticrock.candle.data.preferences.PreferencesRepository(
-        dataStore
-    ).readKeepScreenOn() }) }
-    val scope = rememberCoroutineScope()
-    val onKeepScreenOnPreferenceChange = {
-        if (!keepScreenOn) {
-            keepScreenOn = true
-            scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(dataStore).saveKeepScreenOn(true) }
-
-        } else {
-            keepScreenOn = false
-            scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(dataStore).saveKeepScreenOn(false) }
-        }
-    }
-    var allowOnLockScreen by remember { mutableStateOf(runBlocking { com.elasticrock.candle.data.preferences.PreferencesRepository(
-        dataStore
-    ).readLockScreenAllowed() }) }
-    val onAllowOnLockScreenPreferenceChange = {
-        if (!allowOnLockScreen) {
-            allowOnLockScreen = true
-            scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(dataStore).saveLockScreenAllowed(true) }
-
-        } else {
-            allowOnLockScreen = false
-            scope.launch { com.elasticrock.candle.data.preferences.PreferencesRepository(dataStore).saveLockScreenAllowed(false) }
-        }
-    }
-
-    if (keepScreenOn) {
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-    } else {
-        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-    }
-
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-        if (allowOnLockScreen) {
-            activity.setShowWhenLocked(true)
-        } else {
-            activity.setShowWhenLocked(false)
-        }
-    }
 
     val navController = rememberNavController()
     NavHost(
@@ -119,14 +62,45 @@ fun TorchApp(dataStore: DataStore<Preferences>, activity: ComponentActivity) {
         popEnterTransition = { EnterTransition.None },
         popExitTransition = { ExitTransition.None },
     ) {
-        composable("main") { MainScreen(dataStore, navController) }
+        composable("main") {
+            MainScreen(
+                onNavigateToSettings = {
+                    navController.navigate("settings")
+                },
+                onKeepScreenOn = {
+                    window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                },
+                onAllowOnLockScreen = {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+                        activity.setShowWhenLocked(true)
+                    }
+                }
+            )
+        }
         composable("settings") {
             SettingsScreen(
-                navController = navController,
-                onKeepScreenOnPreferenceChange = { onKeepScreenOnPreferenceChange() },
-                keepScreenOn = keepScreenOn,
-                allowOnLockScreen = allowOnLockScreen,
-                onAllowOnLockScreenPreferenceChange = { onAllowOnLockScreenPreferenceChange() }
+                onBackArrowClick = {
+                    navController.navigateUp()
+                },
+                onLicensesOptionClick = {
+
+                },
+                onEnableKeepScreenOn = {
+                    window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                },
+                onDisableKeepScreenOn = {
+                    window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                },
+                onAllowOnLockScreen = {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+                        activity.setShowWhenLocked(true)
+                    }
+                },
+                onDisallowOnLockScreen = {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+                        activity.setShowWhenLocked(false)
+                    }
+                }
             )
         }
     }

@@ -19,7 +19,8 @@ fun PreferenceSlider(
     icon: ImageVector,
     range: ClosedFloatingPointRange<Float>,
     value: Float,
-    onValueChange: (Float) -> Unit
+    onValueChange: (Float) -> Unit,
+    onValueChangeFinished: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -43,7 +44,8 @@ fun PreferenceSlider(
                 activeTrackColor = MaterialTheme.colorScheme.onSurface
             ),
             valueRange = range,
-            onValueChange = onValueChange
+            onValueChange = onValueChange,
+            onValueChangeFinished = onValueChangeFinished
         )
     }
 }
