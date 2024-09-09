@@ -1,0 +1,4 @@
+ - Target API 35
+ - Updated dependencies (and moved to version catalog)
+ - Improved the architecture under the hood
+ - Stopped advertising QSTile

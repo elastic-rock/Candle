@@ -14,8 +14,8 @@ android {
         applicationId = "com.elasticrock.candle"
         minSdk = 24
         targetSdk = 35
-        versionCode = 10
-        versionName = "1.5.0"
+        versionCode = 11
+        versionName = "1.6.0"
         resourceConfigurations.addAll(listOf("en-rGB", "cs", "en-rUS", "fr-rFR", "de-rDE"))
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
