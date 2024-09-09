@@ -13,7 +13,3 @@ height="80">](https://github.com/elastic-rock/Candle/releases/latest)
 
 <img width=250 alt="Screenshot App"
 src="metadata/en-US/images/phoneScreenshots/screenshot-app.png?raw=true">
-
-**Credits**
-
- - [**Material Icons**](https://fonts.google.com/icons) - All icons used, licensed under the [Apache License Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
