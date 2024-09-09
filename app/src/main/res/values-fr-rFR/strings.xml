@@ -8,4 +8,9 @@
     <string name="keep_screen_on_description">Empêcher l\'écran de s\'éteindre</string>
     <string name="allow_on_lock_screen">Autoriser sur l\'écran verrouillé</string>
     <string name="allow_on_lock_screen_description">Autoriser l\'utilisation de l\'application lorsque l\'appareil est verrouillé</string>
+    <string name="author">Auteur</string>
+    <string name="source_code">Code source</string>
+    <string name="version">Version</string>
+    <string name="license">Licence</string>
+    <string name="about">À propos</string>
 </resources>

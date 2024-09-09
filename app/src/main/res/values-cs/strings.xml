@@ -8,4 +8,9 @@
     <string name="keep_screen_on_description">Zabránění vypnutí obrazovky</string>
     <string name="allow_on_lock_screen">Povolit na zamykací obrazovce</string>
     <string name="allow_on_lock_screen_description">Umožnit používaní aplikace když je zařízení zamčené</string>
+    <string name="author">Autor</string>
+    <string name="source_code">Zdrojový kód</string>
+    <string name="version">Verze</string>
+    <string name="license">Licence</string>
+    <string name="about">O Aplikaci</string>
 </resources>

@@ -1,6 +1,12 @@
 package com.elasticrock.candle.ui.settings
 
 import android.app.Activity
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageInfo
+import android.net.Uri
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,12 +23,16 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.elasticrock.candle.R
+import com.elasticrock.candle.ui.components.AboutItem
+import com.elasticrock.candle.ui.components.PreferenceSubtitle
 import com.elasticrock.candle.ui.components.PreferenceSwitch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,6 +51,9 @@ fun SettingsScreen(
     if (!view.isInEditMode) {
         WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !isSystemInDarkTheme()
     }
+
+    val context = LocalContext.current
+    val clipboard = getSystemService(context, ClipboardManager::class.java) as ClipboardManager
 
     val state = viewModel.state.collectAsStateWithLifecycle()
     val keepScreenOn = state.value.keepScreenOn
@@ -95,6 +108,73 @@ fun SettingsScreen(
                             }
                         )
                     }
+                }
+
+                item {
+                    PreferenceSubtitle(text = stringResource(R.string.about))
+                }
+
+                item {
+                    AboutItem(
+                        title = stringResource(id = R.string.author),
+                        subtitle = stringResource(id = R.string.david_weis)
+                    )
+                }
+
+                item {
+                    val url = "https://github.com/elastic-rock/Candle"
+                    val intent = Intent(Intent.ACTION_VIEW)
+                    AboutItem(
+                        title = stringResource(id = R.string.source_code),
+                        subtitle = stringResource(id = R.string.github),
+                        onClick = {
+                            intent.data = Uri.parse(url)
+                            context.startActivity(intent)
+                        }
+                    )
+                }
+
+                item {
+                    val appId = "com.elasticrock.keepscreenon"
+                    AboutItem(
+                        title = stringResource(id = R.string.application_id),
+                        subtitle = appId,
+                        onClick = {
+                            val clip: ClipData = ClipData.newPlainText("simple text", appId)
+                            clipboard.setPrimaryClip(clip)
+                        }
+                    )
+                }
+
+                item {
+                    fun getAppVersion(context: Context): String {
+                        val packageInfo: PackageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+                        return packageInfo.versionName!!
+                    }
+
+                    val version = getAppVersion(context)
+
+                    AboutItem(
+                        title = stringResource(id = R.string.version),
+                        subtitle = version,
+                        onClick = {
+                            val clip: ClipData = ClipData.newPlainText("simple text", version)
+                            clipboard.setPrimaryClip(clip)
+                        }
+                    )
+                }
+
+                item {
+                    val url = "https://gnu.org/licenses/gpl-3.0.txt"
+                    val intent = Intent(Intent.ACTION_VIEW)
+                    AboutItem(
+                        title = stringResource(id = R.string.license),
+                        subtitle = "GPL-3.0",
+                        onClick = {
+                            intent.data = Uri.parse(url)
+                            context.startActivity(intent)
+                        }
+                    )
                 }
             }
         }
