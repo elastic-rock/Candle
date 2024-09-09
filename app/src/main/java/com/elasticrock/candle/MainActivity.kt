@@ -1,8 +1,6 @@
 package com.elasticrock.candle
 
 import android.app.Activity
-import android.app.StatusBarManager
-import android.content.ComponentName
 import android.content.pm.ActivityInfo
 import android.os.Build
 import android.os.Bundle
@@ -33,15 +31,6 @@ class MainActivity : ComponentActivity() {
             CandleTheme {
                 TorchApp(this)
             }
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            val statusBarService = applicationContext.getSystemService(StatusBarManager::class.java)
-            statusBarService.requestAddTileService(
-                ComponentName(applicationContext, QSTileService::class.java.name),
-                applicationContext.getString(R.string.candle),
-                android.graphics.drawable.Icon.createWithResource(applicationContext,R.drawable.rounded_candle_qs),
-                {}) {}
         }
 
         this.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
