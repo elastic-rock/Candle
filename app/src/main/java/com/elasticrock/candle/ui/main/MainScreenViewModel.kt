@@ -39,6 +39,8 @@ data class MainScreenState(
 
     val keepScreenOn: Boolean = false,
     val allowOnLockScreen: Boolean = false,
+
+    val isLocked: Boolean = false
 )
 
 @HiltViewModel
@@ -65,6 +67,8 @@ class MainScreenViewModel @Inject constructor(
 
     private val _keepScreenOn = preferencesRepository.keepScreenOn
     private val _allowOnLockScreen = preferencesRepository.lockScreenAllowed
+
+    private val _isLocked = MutableStateFlow(false)
 
     init {
         viewModelScope.launch {
@@ -96,7 +100,9 @@ class MainScreenViewModel @Inject constructor(
         _isCandleEffectRunning,
 
         _keepScreenOn,
-        _allowOnLockScreen
+        _allowOnLockScreen,
+
+        _isLocked
     ) { flowValues ->
         val state = flowValues[0] as MainScreenState
         val hue = flowValues[1] as Float
@@ -120,6 +126,8 @@ class MainScreenViewModel @Inject constructor(
         val keepScreenOn = flowValues[14] as Boolean
         val allowOnLockScreen = flowValues[15] as Boolean
 
+        val isLocked = flowValues[16] as Boolean
+
         state.copy(
             hue = hue,
             lightness = lightness,
@@ -140,7 +148,9 @@ class MainScreenViewModel @Inject constructor(
             isCandleEffectRunning = isCandleEffectRunning,
 
             keepScreenOn = keepScreenOn,
-            allowOnLockScreen = allowOnLockScreen
+            allowOnLockScreen = allowOnLockScreen,
+
+            isLocked = isLocked
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), MainScreenState())
 
@@ -172,6 +182,10 @@ class MainScreenViewModel @Inject constructor(
         viewModelScope.launch {
             preferencesRepository.savePreviousBrightness(_brightness.value)
         }
+    }
+
+    fun onLockChange(locked: Boolean) {
+        _isLocked.value = locked
     }
 
     fun savePreset(hue: Float, lightness: Float, brightness: Float, preset: Int) {

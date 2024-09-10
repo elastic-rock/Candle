@@ -1,8 +1,10 @@
 package com.elasticrock.candle.ui.main
 
 import android.app.Activity
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -18,6 +20,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Brightness6
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.Exposure
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.BottomSheetScaffold
@@ -25,6 +29,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -72,8 +77,16 @@ fun MainScreen(
     val keepScreenOn = state.value.keepScreenOn
     val allowOnLockScreen = state.value.allowOnLockScreen
 
+    val isLocked = state.value.isLocked
+
     val view = LocalView.current
     val window = (view.context as Activity).window
+
+    if (isLocked) {
+        BackHandler {
+            // Block back navigation
+        }
+    }
 
     LaunchedEffect(brightness) {
         setBrightness(window, brightness)
@@ -198,17 +211,36 @@ fun MainScreen(
                     }
                 )
 
-                OutlinedButton(
-                    onClick = onNavigateToSettings,
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = MaterialTheme.colorScheme.onSurface
-                    ),
-                    modifier = Modifier
-                        .padding(4.dp)
-                        .align(Alignment.CenterHorizontally),
-                    contentPadding = PaddingValues(start = 24.dp, end = 24.dp)
+                Box(
+                    modifier = Modifier.fillMaxWidth().padding(4.dp),
+                    contentAlignment = Alignment.CenterStart // Aligns the row content to start
                 ) {
-                    Text(text = stringResource(id = R.string.settings))
+                    IconButton(
+                        onClick = {
+                            viewModel.onLockChange(true)
+                            scope.launch { scaffoldState.bottomSheetState.hide() }
+                        },
+                        modifier = Modifier
+                            .padding(start = 8.dp, end = 16.dp)
+                            .align(Alignment.CenterStart)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Lock,
+                            contentDescription = stringResource(R.string.lock)
+                        )
+                    }
+
+                    OutlinedButton(
+                        onClick = onNavigateToSettings,
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.onSurface
+                        ),
+                        modifier = Modifier
+                            .align(Alignment.Center),
+                        contentPadding = PaddingValues(start = 24.dp, end = 24.dp)
+                    ) {
+                        Text(text = stringResource(id = R.string.settings))
+                    }
                 }
 
                 Spacer(modifier = Modifier.padding(4.dp))
@@ -227,23 +259,38 @@ fun MainScreen(
                     val buttonColor = if (selectedLightness > 0.5f) {
                         Color.Black} else {
                         Color.White}
-                    OutlinedButton(
-                        onClick = {
+                    if (!isLocked) {
+                        OutlinedButton(
+                            onClick = {
+                                if (isCandleEffectRunning) {
+                                    stopCandleEffect()
+                                } else {
+                                    scope.launch { scaffoldState.bottomSheetState.expand() }
+                                }
+                            },
+                            modifier = Modifier.padding(8.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = buttonColor),
+                            contentPadding = PaddingValues(start = 16.dp, end = 24.dp)
+                        ) {
                             if (isCandleEffectRunning) {
-                                stopCandleEffect()
+                                Text(text = stringResource(id = R.string.stop), modifier = Modifier.padding(start = 8.dp))
                             } else {
-                                scope.launch { scaffoldState.bottomSheetState.expand() }
+                                Icon(imageVector = Icons.Filled.Tune, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
+                                Text(text = stringResource(id = R.string.colors))
                             }
-                        },
-                        modifier = Modifier.padding(8.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = buttonColor),
-                        contentPadding = PaddingValues(start = 16.dp, end = 24.dp)
-                    ) {
-                        if (isCandleEffectRunning) {
-                            Text(text = stringResource(id = R.string.stop), modifier = Modifier.padding(start = 8.dp))
-                        } else {
-                            Icon(imageVector = Icons.Filled.Tune, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
-                            Text(text = stringResource(id = R.string.colors))
+                        }
+                    } else {
+                        IconButton(
+                            onClick = {
+                                viewModel.onLockChange(false)
+                            },
+                            modifier = Modifier
+                                .padding(start = 0.dp, end = 16.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.LockOpen,
+                                contentDescription = stringResource(R.string.unlock)
+                            )
                         }
                     }
                 }
