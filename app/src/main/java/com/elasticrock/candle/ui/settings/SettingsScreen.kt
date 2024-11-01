@@ -176,6 +176,14 @@ fun SettingsScreen(
                         }
                     )
                 }
+
+                item {
+                    AboutItem(
+                        title = stringResource(id = R.string.third_party_licenses),
+                        subtitle = stringResource(id = R.string.third_party_licenses_description),
+                        onClick = onLicensesOptionClick
+                    )
+                }
             }
         }
     )

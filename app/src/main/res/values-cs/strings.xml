@@ -16,4 +16,6 @@
     <string name="about">O Aplikaci</string>
     <string name="lock">Uzamknout</string>
     <string name="unlock">Odemknout</string>
+    <string name="third_party_licenses">Licence třetích stran</string>
+    <string name="third_party_licenses_description">Licence zahrnutých open source knihoven</string>
 </resources>

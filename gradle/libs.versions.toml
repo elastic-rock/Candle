@@ -1,4 +1,5 @@
 [versions]
+aboutlibs = "11.2.3"
 activityCompose = "1.9.3"
 agp = "8.7.2"
 composeBom = "2024.10.01"
@@ -38,6 +39,7 @@ junit = { module = "junit:junit", version.ref = "junit" }
 dagger-hilt = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
 dagger-hilt-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "androidxHilt" }
+aboutlibs = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutlibs" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -45,3 +47,4 @@ jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = 
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 dagger-hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+aboutlibs = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutlibs" }

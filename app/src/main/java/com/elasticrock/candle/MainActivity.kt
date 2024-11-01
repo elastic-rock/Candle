@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.elasticrock.candle.ui.licenses.LicensesScreen
 import com.elasticrock.candle.ui.main.MainScreen
 import com.elasticrock.candle.ui.settings.SettingsScreen
 import com.elasticrock.candle.ui.theme.CandleTheme
@@ -72,7 +73,7 @@ fun TorchApp(activity: ComponentActivity) {
                     navController.navigateUp()
                 },
                 onLicensesOptionClick = {
-
+                    navController.navigate("licenses")
                 },
                 onEnableKeepScreenOn = {
                     window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -89,6 +90,13 @@ fun TorchApp(activity: ComponentActivity) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
                         activity.setShowWhenLocked(false)
                     }
+                }
+            )
+        }
+        composable("licenses") {
+            LicensesScreen(
+                onBackArrowClick = {
+                    navController.navigateUp()
                 }
             )
         }

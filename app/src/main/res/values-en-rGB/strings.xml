@@ -16,4 +16,6 @@
     <string name="about">About</string>
     <string name="lock">Lock</string>
     <string name="unlock">Unlock</string>
+    <string name="third_party_licenses">Third party licenses</string>
+    <string name="third_party_licenses_description">Licenses of included open source libraries</string>
 </resources>
