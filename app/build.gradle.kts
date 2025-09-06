@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -9,20 +11,23 @@ plugins {
 
 android {
     namespace = "com.elasticrock.candle"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.elasticrock.candle"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 13
         versionName = "1.7.0"
-        resourceConfigurations.addAll(listOf("en-rGB", "cs", "en-rUS", "fr-rFR", "de-rDE"))
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
+    }
+
+    androidResources {
+        localeFilters += listOf("en-rGB", "cs", "en-rUS", "fr-rFR", "de-rDE")
     }
 
     buildTypes {
@@ -39,14 +44,13 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    kotlinOptions {
-        jvmTarget = "11"
-    }
+    kotlin.compilerOptions.jvmTarget = JvmTarget.JVM_11
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.3"
+        kotlinCompilerExtensionVersion = "1.5.7"
     }
     packaging {
         resources {
@@ -54,11 +58,23 @@ android {
         }
     }
     aboutLibraries {
-        excludeFields = arrayOf("generated")
+        export {
+            excludeFields.addAll("generated")
+        }
     }
     dependenciesInfo {
         includeInApk = false
         includeInBundle = false
+    }
+    flavorDimensions += listOf("target")
+    productFlavors {
+        create("play") {
+            dimension = "target"
+            applicationId = "eu.davidweis.candle"
+        }
+        create("general") {
+            dimension = "target"
+        }
     }
 }
 
