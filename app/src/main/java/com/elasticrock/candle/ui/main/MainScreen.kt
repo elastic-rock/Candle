@@ -2,7 +2,11 @@ package com.elasticrock.candle.ui.main
 
 import android.app.Activity
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,10 +42,18 @@ import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -51,10 +63,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.elasticrock.candle.R
 import com.elasticrock.candle.ui.components.PreferenceSlider
 import com.elasticrock.candle.ui.components.SavedColor
+import com.elasticrock.candle.util.applySwipe
 import com.elasticrock.candle.util.maxBrightness
 import com.elasticrock.candle.util.minBrightness
 import com.elasticrock.candle.util.setBrightness
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -78,6 +93,21 @@ fun MainScreen(
     val allowOnLockScreen = state.value.allowOnLockScreen
 
     val isLocked = state.value.isLocked
+
+    val swipeEnabled = state.value.swipeToAdjustBrightness && !isLocked
+    val latestBrightness by rememberUpdatedState(brightness)
+    val haptic = LocalHapticFeedback.current
+    var isSwiping by remember { mutableStateOf(false) }
+    var showBrightnessLabel by remember { mutableStateOf(false) }
+
+    LaunchedEffect(isSwiping) {
+        if (isSwiping) {
+            showBrightnessLabel = true
+        } else {
+            delay(800)
+            showBrightnessLabel = false
+        }
+    }
 
     val view = LocalView.current
     val window = (view.context as Activity).window
@@ -249,49 +279,92 @@ fun MainScreen(
         },
         content = {
             Surface(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .pointerInput(swipeEnabled) {
+                        if (!swipeEnabled) return@pointerInput
+                        var value = 0f
+                        detectVerticalDragGestures(
+                            onDragStart = {
+                                value = latestBrightness
+                                isSwiping = true
+                            },
+                            onDragEnd = {
+                                isSwiping = false
+                                viewModel.onBrightnessSave()
+                            },
+                            onDragCancel = {
+                                isSwiping = false
+                                viewModel.onBrightnessSave()
+                            }
+                        ) { change, dy ->
+                            change.consume()
+                            val newValue = applySwipe(value, dy, size.height, minBrightness..maxBrightness)
+                            if (newValue != value && (newValue == minBrightness || newValue == maxBrightness)) {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            }
+                            value = newValue
+                            viewModel.onBrightnessChange(value)
+                        }
+                    },
                 color = Color.hsl(hue = selectedHue, saturation = 1f, lightness = selectedLightness)
             ) {
-                Column(
-                    verticalArrangement = Arrangement.Bottom,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.safeContentPadding()
-                ) {
-                    val buttonColor = if (selectedLightness > 0.5f) {
-                        Color.Black} else {
-                        Color.White}
-                    if (!isLocked) {
-                        OutlinedButton(
-                            onClick = {
+                val buttonColor = if (selectedLightness > 0.5f) {
+                    Color.Black} else {
+                    Color.White}
+                Box(modifier = Modifier.fillMaxSize()) {
+                    AnimatedVisibility(
+                        visible = showBrightnessLabel,
+                        enter = fadeIn(),
+                        exit = fadeOut(),
+                        modifier = Modifier.align(Alignment.Center)
+                    ) {
+                        Text(
+                            text = "${((brightness - minBrightness) / (maxBrightness - minBrightness) * 100).roundToInt()} %",
+                            style = MaterialTheme.typography.displayMedium,
+                            color = buttonColor.copy(alpha = 0.6f)
+                        )
+                    }
+                    Column(
+                        verticalArrangement = Arrangement.Bottom,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .safeContentPadding()
+                    ) {
+                        if (!isLocked) {
+                            OutlinedButton(
+                                onClick = {
+                                    if (isCandleEffectRunning) {
+                                        stopCandleEffect()
+                                    } else {
+                                        scope.launch { scaffoldState.bottomSheetState.expand() }
+                                    }
+                                },
+                                modifier = Modifier.padding(8.dp),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = buttonColor),
+                                contentPadding = PaddingValues(start = 16.dp, end = 24.dp)
+                            ) {
                                 if (isCandleEffectRunning) {
-                                    stopCandleEffect()
+                                    Text(text = stringResource(id = R.string.stop), modifier = Modifier.padding(start = 8.dp))
                                 } else {
-                                    scope.launch { scaffoldState.bottomSheetState.expand() }
+                                    Icon(imageVector = Icons.Filled.Tune, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
+                                    Text(text = stringResource(id = R.string.colors))
                                 }
-                            },
-                            modifier = Modifier.padding(8.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = buttonColor),
-                            contentPadding = PaddingValues(start = 16.dp, end = 24.dp)
-                        ) {
-                            if (isCandleEffectRunning) {
-                                Text(text = stringResource(id = R.string.stop), modifier = Modifier.padding(start = 8.dp))
-                            } else {
-                                Icon(imageVector = Icons.Filled.Tune, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
-                                Text(text = stringResource(id = R.string.colors))
                             }
-                        }
-                    } else {
-                        IconButton(
-                            onClick = {
-                                viewModel.onLockChange(false)
-                            },
-                            modifier = Modifier
-                                .padding(start = 0.dp, end = 16.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.LockOpen,
-                                contentDescription = stringResource(R.string.unlock)
-                            )
+                        } else {
+                            IconButton(
+                                onClick = {
+                                    viewModel.onLockChange(false)
+                                },
+                                modifier = Modifier
+                                    .padding(start = 0.dp, end = 16.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.LockOpen,
+                                    contentDescription = stringResource(R.string.unlock)
+                                )
+                            }
                         }
                     }
                 }

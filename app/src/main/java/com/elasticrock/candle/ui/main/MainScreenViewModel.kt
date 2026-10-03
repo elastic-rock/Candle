@@ -40,7 +40,9 @@ data class MainScreenState(
     val keepScreenOn: Boolean = false,
     val allowOnLockScreen: Boolean = false,
 
-    val isLocked: Boolean = false
+    val isLocked: Boolean = false,
+
+    val swipeToAdjustBrightness: Boolean = true
 )
 
 @HiltViewModel
@@ -69,6 +71,8 @@ class MainScreenViewModel @Inject constructor(
     private val _allowOnLockScreen = preferencesRepository.lockScreenAllowed
 
     private val _isLocked = MutableStateFlow(false)
+
+    private val _swipeToAdjustBrightness = preferencesRepository.swipeToAdjustBrightness
 
     init {
         viewModelScope.launch {
@@ -102,7 +106,9 @@ class MainScreenViewModel @Inject constructor(
         _keepScreenOn,
         _allowOnLockScreen,
 
-        _isLocked
+        _isLocked,
+
+        _swipeToAdjustBrightness
     ) { flowValues ->
         val state = flowValues[0] as MainScreenState
         val hue = flowValues[1] as Float
@@ -128,6 +134,8 @@ class MainScreenViewModel @Inject constructor(
 
         val isLocked = flowValues[16] as Boolean
 
+        val swipeToAdjustBrightness = flowValues[17] as Boolean
+
         state.copy(
             hue = hue,
             lightness = lightness,
@@ -150,7 +158,9 @@ class MainScreenViewModel @Inject constructor(
             keepScreenOn = keepScreenOn,
             allowOnLockScreen = allowOnLockScreen,
 
-            isLocked = isLocked
+            isLocked = isLocked,
+
+            swipeToAdjustBrightness = swipeToAdjustBrightness
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), MainScreenState())
 

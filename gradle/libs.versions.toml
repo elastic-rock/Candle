@@ -12,6 +12,7 @@ materialIconsExtended = "1.7.8"
 navigationCompose = "2.9.3"
 uiTestManifest = "1.9.0"
 hilt = "2.57.1"
+junit = "4.13.2"
 androidxHilt = "1.2.0"
 ksp = "2.2.10-2.0.2"
 
@@ -33,6 +34,7 @@ dagger-hilt = { module = "com.google.dagger:hilt-android", version.ref = "hilt" 
 dagger-hilt-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "androidxHilt" }
 aboutlibs = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutlibs" }
+junit = { module = "junit:junit", version.ref = "junit" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Brightness6
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -58,6 +59,7 @@ fun SettingsScreen(
     val state = viewModel.state.collectAsStateWithLifecycle()
     val keepScreenOn = state.value.keepScreenOn
     val allowOnLockScreen = state.value.allowOnLockScreen
+    val swipeToAdjustBrightness = state.value.swipeToAdjustBrightness
 
     Scaffold(
         Modifier.fillMaxSize(),
@@ -108,6 +110,18 @@ fun SettingsScreen(
                             }
                         )
                     }
+                }
+
+                item {
+                    PreferenceSwitch(
+                        title = stringResource(id = R.string.swipe_to_adjust_brightness),
+                        description = stringResource(id = R.string.swipe_to_adjust_brightness_description),
+                        icon = Icons.Filled.Brightness6,
+                        isChecked = swipeToAdjustBrightness,
+                        onClick = {
+                            viewModel.onSwipeToAdjustBrightnessChange(!swipeToAdjustBrightness)
+                        }
+                    )
                 }
 
                 item {

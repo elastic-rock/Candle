@@ -21,6 +21,7 @@ class PreferencesRepository @Inject constructor(private val dataStore: DataStore
     private val previousLightnessKey = floatPreferencesKey("previousLightness")
     private val keepScreenOnKey = booleanPreferencesKey("keepscreenon")
     private val lockScreenAllowedKey = booleanPreferencesKey("lockScreenAllowed")
+    private val swipeToAdjustBrightnessKey = booleanPreferencesKey("swipeToAdjustBrightness")
     private val hue0key = floatPreferencesKey("hue0")
     private val lightness0key = floatPreferencesKey("lightness0")
     private val brightness0key = floatPreferencesKey("brightness0")
@@ -49,6 +50,16 @@ class PreferencesRepository @Inject constructor(private val dataStore: DataStore
             }
         } catch (e: IOException) {
             Log.e(tag,"Error writing keep screen on setting")
+        }
+    }
+
+    suspend fun saveSwipeToAdjustBrightness(swipeToAdjustBrightness: Boolean) {
+        try {
+            dataStore.edit { preferences ->
+                preferences[swipeToAdjustBrightnessKey] = swipeToAdjustBrightness
+            }
+        } catch (e: IOException) {
+            Log.e(tag,"Error writing swipe to adjust brightness setting")
         }
     }
 
@@ -240,5 +251,10 @@ class PreferencesRepository @Inject constructor(private val dataStore: DataStore
     val lockScreenAllowed: Flow<Boolean> = dataStore.data
         .map { preferences ->
             preferences[lockScreenAllowedKey] ?: true
+        }
+
+    val swipeToAdjustBrightness: Flow<Boolean> = dataStore.data
+        .map { preferences ->
+            preferences[swipeToAdjustBrightnessKey] ?: true
         }
 }
